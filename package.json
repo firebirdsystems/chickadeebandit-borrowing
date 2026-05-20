@@ -1,0 +1,10 @@
+{
+  "name": "chickadee-app-borrowing",
+  "version": "1.0.0",
+  "description": "Borrowing app for Family Hub",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Borrowing</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           var(--hub-bg, #f9fafb);
+      --card:         var(--hub-surface, #ffffff);
+      --border:       var(--hub-border, #e5e7eb);
+      --border-mid:   var(--hub-border, #d1d5db);
+      --text:         var(--hub-text, #111827);
+      --muted:        var(--hub-text-muted, #6b7280);
+      --accent:       var(--hub-primary, #111827);
+      --accent-fg:    var(--hub-primary-fg, #ffffff);
+      --accent-hover: var(--hub-primary-hover, #374151);
+      --accent-light: #f3f4f6;
+      --green: #16a34a; --green-light: #dcfce7;
+      --amber: #d97706; --amber-light: #fef3c7;
+      --red: #dc2626;   --red-light: #fee2e2;
+      --blue: #2563eb;  --blue-light: #dbeafe;
+      --radius:       var(--hub-radius, 0.5rem);
+      --shadow:       0 1px 3px rgba(0,0,0,.07);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .app { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 16px 20px;
+      background: var(--accent);
+      border-radius: var(--radius);
+      color: white;
+    }
+    header h1 { font-size: 1.2rem; font-weight: 700; }
+    header .sub { font-size: 0.8rem; opacity: .75; margin-top: 2px; }
+
+    /* ── Buttons ───────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity .15s;
+    }
+    .btn:disabled { opacity: .5; cursor: default; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover:not(:disabled) { opacity: .88; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-danger:hover:not(:disabled) { opacity: .88; }
+    .btn-success { background: var(--green); color: white; }
+    .btn-success:hover:not(:disabled) { opacity: .88; }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+
+    /* ── Tabs ────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 16px;
+    }
+    .tab {
+      flex: 1;
+      padding: 7px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tab.active { background: white; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .tab-badge {
+      background: var(--amber);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    /* ── Request cards ────────────────────────────────────── */
+    .request-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--shadow);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .request-card:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(124,58,237,.1); }
+    .request-card.needs-action { border-color: var(--amber); background: #fffbeb; }
+
+    .request-main { flex: 1; min-width: 0; }
+    .request-item { font-weight: 600; font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .request-meta {
+      font-size: 0.82rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .request-dates { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+
+    .request-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .action-needed {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--amber);
+      text-align: right;
+    }
+
+    /* ── Agreement dots ──────────────────────────────────── */
+    .agree-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .agree-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      display: inline-block;
+    }
+    .agree-dot.on { background: var(--green); border-color: var(--green); }
+
+    /* ── Status badges ───────────────────────────────────── */
+    .status-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .status-pending   { background: var(--amber-light);  color: var(--amber); }
+    .status-locked    { background: var(--accent-light); color: var(--accent); }
+    .status-returned  { background: var(--green-light);  color: var(--green); }
+    .status-cancelled { background: var(--border);       color: var(--muted); }
+
+    /* ── Avatar ──────────────────────────────────────────── */
+    .avatar {
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .avatar.sm { width: 24px; height: 24px; font-size: 0.7rem; }
+    .avatar.xs { width: 18px; height: 18px; font-size: 0.62rem; }
+    .avatar.md { width: 36px; height: 36px; font-size: 1rem; }
+
+    /* ── Modal ───────────────────────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 100;
+    }
+    @media (min-width: 480px) {
+      .modal-backdrop { align-items: center; padding: 20px; }
+    }
+    .modal {
+      background: white;
+      border-radius: var(--radius) var(--radius) 0 0;
+      width: 100%;
+      max-width: 500px;
+      padding: 24px;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    @media (min-width: 480px) { .modal { border-radius: var(--radius); } }
+
+    .modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+      background: white;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .form-group .row { display: flex; gap: 10px; }
+    .form-group .row > * { flex: 1; }
+
+    .form-notice {
+      background: var(--amber-light);
+      color: var(--amber);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    /* ── Condition toggles ────────────────────────────────── */
+    .condition-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .condition-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+      transition: all .15s;
+      user-select: none;
+    }
+    .condition-toggle input { display: none; }
+    .condition-toggle.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .condition-toggle:hover { border-color: var(--accent); }
+
+    /* ── Modal actions ───────────────────────────────────── */
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .modal-actions .btn { flex: 1; justify-content: center; min-width: 100px; }
+
+    /* ── Detail view ─────────────────────────────────────── */
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .detail-header h3 { margin-bottom: 0; }
+    .detail-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .detail-field {}
+    .detail-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .detail-value { font-size: 0.92rem; font-weight: 500; }
+    .member-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .detail-section {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 2px;
+      margin-bottom: 12px;
+    }
+
+    .condition-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+    .condition-pill {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── Agreement row ───────────────────────────────────── */
+    .agreement-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .agreement-person {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      flex: 1;
+      min-width: 120px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .agreement-person.agreed {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .agree-check {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .agreement-person.agreed .agree-check { color: var(--green); }
+
+    /* ── Locked notice ───────────────────────────────────── */
+    .locked-notice {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    /* ── Misc ────────────────────────────────────────────── */
+    .empty { text-align: center; padding: 36px 16px; color: var(--muted); font-size: 0.9rem; }
+    .loading { text-align: center; padding: 40px; color: var(--muted); }
+    .section-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+    }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  </style>
+  <base href="/run/borrowing/" />
+</head>
+<body>
+<div class="app">
+  <div id="root"><div class="loading">Loading…</div></div>
+</div>
+
+<script type="module">
+import { memberColor, initial, esc } from "/hub-sdk.js";
+
+const CONTEXT = window.__CONTEXT_URL ?? "";
+const DB      = window.__DB_URL      ?? "";
+const APP_ID  = window.__APP_ID      ?? "borrowing";
+const ME      = window.__CURRENT_MEMBER ?? null;
+
+// ─── State ────────────────────────────────────────────────────────────────
+let members  = [];
+let requests = [];
+let activeTab = "for-me"; // "for-me" | "from-me"
+
+// ─── DB helper ────────────────────────────────────────────────────────────
+async function db(sql, params = []) {
+  if (!DB) return { rows: [] };
+  const res = await fetch(DB, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sql, params }),
+  });
+  return res.json();
+}
+
+// ─── DB init ──────────────────────────────────────────────────────────────
+async function initDb() {
+  await db(`CREATE TABLE IF NOT EXISTS requests (
+    id               TEXT PRIMARY KEY,
+    item_name        TEXT NOT NULL,
+    item_description TEXT NOT NULL DEFAULT '',
+    borrower_id      TEXT NOT NULL,
+    lender_id        TEXT NOT NULL,
+    needed_date      TEXT NOT NULL,
+    return_date      TEXT NOT NULL,
+    return_condition TEXT NOT NULL DEFAULT '[]',
+    if_not_returned  TEXT NOT NULL DEFAULT '',
+    status           TEXT NOT NULL DEFAULT 'pending',
+    borrower_agreed  INTEGER NOT NULL DEFAULT 0,
+    lender_agreed    INTEGER NOT NULL DEFAULT 0,
+    locked_at        TEXT,
+    created_at       TEXT NOT NULL,
+    updated_at       TEXT NOT NULL
+  )`);
+  await db(`CREATE TABLE IF NOT EXISTS activity (
+    id          TEXT PRIMARY KEY,
+    request_id  TEXT NOT NULL,
+    actor_id    TEXT NOT NULL,
+    action      TEXT NOT NULL,
+    detail      TEXT NOT NULL DEFAULT '',
+    created_at  TEXT NOT NULL
+  )`);
+}
+
+// ─── Load ─────────────────────────────────────────────────────────────────
+async function loadMembers() {
+  if (!CONTEXT) {
+    members = [
+      { id: "demo-1", name: "Alex",   role: "adult" },
+      { id: "demo-2", name: "Jordan", role: "adult" },
+      { id: "demo-3", name: "Casey",  role: "adult" },
+    ];
+    return;
+  }
+  try {
+    const res = await fetch(`${CONTEXT}?keys=family.members`);
+    members = ((await res.json())["family.members"]) ?? [];
+  } catch { members = []; }
+}
+
+async function loadRequests() {
+  if (!DB || !ME) return;
+  const { rows } = await db(`
+    SELECT * FROM requests
+    WHERE (borrower_id = ? OR lender_id = ?)
+    ORDER BY
+      CASE status WHEN 'pending' THEN 0 WHEN 'locked' THEN 1 ELSE 2 END,
+      updated_at DESC
+  `, [ME.id, ME.id]);
+  requests = rows.map(r => ({
+    ...r,
+    return_condition: JSON.parse(r.return_condition ?? "[]"),
+    borrower_agreed: !!r.borrower_agreed,
+    lender_agreed:   !!r.lender_agreed,
+  }));
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function memberName(id) {
+  return members.find(m => m.id === id)?.name ?? "Unknown";
+}
+function mc(id) { return memberColor(id, members); }
+
+function formatDate(dateStr) {
+  if (!dateStr) return "—";
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function statusHtml(status) {
+  const map = {
+    pending:   ["status-pending",   "Pending"],
+    locked:    ["status-locked",    "🔒 Agreed"],
+    returned:  ["status-returned",  "Returned"],
+    cancelled: ["status-cancelled", "Cancelled"],
+  };
+  const [cls, label] = map[status] ?? ["status-pending", status];
+  return `<span class="status-badge ${cls}">${label}</span>`;
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────
+async function notify(title, body) {
+  await fetch("/api/notifications/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, body, url: `/run/${APP_ID}` }),
+  }).catch(() => {});
+}
+
+// ─── Activity log ─────────────────────────────────────────────────────────
+async function logActivity(requestId, action, detail = "") {
+  const id = crypto.randomUUID();
+  await db(`INSERT INTO activity (id, request_id, actor_id, action, detail, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+    [id, requestId, ME?.id ?? "system", action, detail, new Date().toISOString()]);
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────
+async function createRequest(fields) {
+  const id  = crypto.randomUUID();
+  const now = new Date().toISOString();
+  await db(`INSERT INTO requests (
+    id, item_name, item_description, borrower_id, lender_id,
+    needed_date, return_date, return_condition, if_not_returned,
+    status, borrower_agreed, lender_agreed, created_at, updated_at
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 0, ?, ?)`, [
+    id, fields.item_name, fields.item_description, ME.id, fields.lender_id,
+    fields.needed_date, fields.return_date,
+    JSON.stringify(fields.return_condition), fields.if_not_returned,
+    now, now,
+  ]);
+  await logActivity(id, "created", `${ME.name} requested to borrow "${fields.item_name}"`);
+  await notify(
+    `${ME.name} wants to borrow something`,
+    `${ME.name} is requesting to borrow "${fields.item_name}" from ${memberName(fields.lender_id)} — open Borrowing to review`,
+  );
+  await loadRequests();
+  closeModal();
+  render();
+}
+
+async function updateRequest(reqId, fields) {
+  const now = new Date().toISOString();
+  await db(`UPDATE requests SET
+    item_name = ?, item_description = ?,
+    needed_date = ?, return_date = ?,
+    return_condition = ?, if_not_returned = ?,
+    borrower_agreed = 0, lender_agreed = 0,
+    updated_at = ?
+    WHERE id = ? AND status = 'pending'`,
+  [
+    fields.item_name, fields.item_description,
+    fields.needed_date, fields.return_date,
+    JSON.stringify(fields.return_condition), fields.if_not_returned,
+    now, reqId,
+  ]);
+  await logActivity(reqId, "updated", `${ME.name} updated the request — both parties must re-agree`);
+  await notify(
+    `Borrow request updated — re-agreement required`,
+    `${ME.name} updated the request for "${fields.item_name}". Both parties must agree again.`,
+  );
+  await loadRequests();
+  closeModal();
+  render();
+}
+
+async function agreeRequest(reqId) {
+  const req = requests.find(r => r.id === reqId);
+  if (!req || req.status !== "pending") return;
+
+  const isBorrower  = req.borrower_id === ME.id;
+  const myField     = isBorrower ? "borrower_agreed" : "lender_agreed";
+  const theirAgreed = isBorrower ? req.lender_agreed : req.borrower_agreed;
+  const now = new Date().toISOString();
+
+  await db(`UPDATE requests SET ${myField} = 1, updated_at = ? WHERE id = ?`, [now, reqId]);
+  await logActivity(reqId, "agreed", `${ME.name} agreed to the terms`);
+
+  if (theirAgreed) {
+    await db(`UPDATE requests SET status = 'locked', locked_at = ?, updated_at = ? WHERE id = ?`, [now, now, reqId]);
+    await logActivity(reqId, "locked", "Both parties agreed — request is now locked");
+    await notify(
+      `🔒 Borrow request locked!`,
+      `Both ${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
+    );
+  } else {
+    const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
+    await notify(
+      `${ME.name} agreed to the borrow request`,
+      `${ME.name} agreed to the terms for "${req.item_name}" — waiting for ${otherName} to agree`,
+    );
+  }
+
+  await loadRequests();
+  closeModal();
+  render();
+}
+
+async function withdrawAgreement(reqId) {
+  const req = requests.find(r => r.id === reqId);
+  if (!req || req.status !== "pending") return;
+
+  const isBorrower = req.borrower_id === ME.id;
+  const myField    = isBorrower ? "borrower_agreed" : "lender_agreed";
+  const now = new Date().toISOString();
+
+  await db(`UPDATE requests SET ${myField} = 0, updated_at = ? WHERE id = ?`, [now, reqId]);
+  await logActivity(reqId, "withdrawn", `${ME.name} withdrew their agreement`);
+  await notify(
+    `Agreement withdrawn`,
+    `${ME.name} withdrew their agreement for the borrow of "${req.item_name}"`,
+  );
+  await loadRequests();
+  closeModal();
+  render();
+}
+
+async function markReturned(reqId) {
+  if (!confirm("Mark this item as returned?")) return;
+  const req = requests.find(r => r.id === reqId);
+  const now = new Date().toISOString();
+  await db(`UPDATE requests SET status = 'returned', updated_at = ? WHERE id = ?`, [now, reqId]);
+  await logActivity(reqId, "returned", `${ME.name} marked the item as returned`);
+  if (req) {
+    await notify(
+      `Item returned`,
+      `${ME.name} marked "${req.item_name}" as returned`,
+    );
+  }
+  await loadRequests();
+  closeModal();
+  render();
+}
+
+async function cancelRequest(reqId) {
+  if (!confirm("Cancel this borrowing request?")) return;
+  const req = requests.find(r => r.id === reqId);
+  const now = new Date().toISOString();
+  await db(`UPDATE requests SET status = 'cancelled', updated_at = ? WHERE id = ?`, [now, reqId]);
+  await logActivity(reqId, "cancelled", `${ME.name} cancelled the request`);
+  if (req) {
+    await notify(
+      `Borrow request cancelled`,
+      `${ME.name} cancelled the request to borrow "${req.item_name}"`,
+    );
+  }
+  await loadRequests();
+  closeModal();
+  render();
+}
+
+// ─── Return condition options ──────────────────────────────────────────────
+const CONDITION_OPTIONS = [
+  { value: "dry-cleaned",  label: "Dry-cleaned" },
+  { value: "washed",       label: "Washed / Laundered" },
+  { value: "disinfected",  label: "Disinfected / Sanitized" },
+  { value: "ironed",       label: "Ironed / Pressed" },
+  { value: "original-pkg", label: "In original packaging" },
+  { value: "as-is",        label: "As-is (no condition)" },
+];
+
+// ─── Modal ────────────────────────────────────────────────────────────────
+let modalEl = null;
+function openModal(html) {
+  closeModal();
+  modalEl = document.createElement("div");
+  modalEl.className = "modal-backdrop";
+  modalEl.innerHTML = `<div class="modal">${html}</div>`;
+  modalEl.addEventListener("click", e => { if (e.target === modalEl) closeModal(); });
+  document.body.appendChild(modalEl);
+}
+function closeModal() { modalEl?.remove(); modalEl = null; }
+
+// ─── New / edit form ──────────────────────────────────────────────────────
+function openRequestForm(req = null) {
+  const isEdit = !!req;
+  const otherMembers = members.filter(m => m.id !== ME?.id);
+  const selectedConditions = req?.return_condition ?? [];
+
+  const conditionHtml = CONDITION_OPTIONS.map(opt => `
+    <label class="condition-toggle ${selectedConditions.includes(opt.value) ? "selected" : ""}">
+      <input type="checkbox" value="${opt.value}" ${selectedConditions.includes(opt.value) ? "checked" : ""} />
+      ${opt.label}
+    </label>
+  `).join("");
+
+  const memberOptions = otherMembers.map(m =>
+    `<option value="${m.id}" ${req?.lender_id === m.id ? "selected" : ""}>${esc(m.name)}</option>`
+  ).join("");
+
+  openModal(`
+    <h3>${isEdit ? "Edit Request" : "New Borrow Request"}</h3>
+    ${isEdit ? `<div class="form-notice">⚠️ Editing will reset both agreements — both parties must re-agree after saving.</div>` : ""}
+    <div class="form-group">
+      <label>Item to borrow</label>
+      <input id="f-item" type="text" value="${esc(req?.item_name ?? "")}" placeholder="Blue dress, power drill, board game…" autofocus />
+    </div>
+    <div class="form-group">
+      <label>Description <span style="font-weight:400;text-transform:none">(optional)</span></label>
+      <textarea id="f-desc" rows="2" placeholder="Any details about the item…">${esc(req?.item_description ?? "")}</textarea>
+    </div>
+    ${!isEdit ? `
+    <div class="form-group">
+      <label>Borrow from</label>
+      <select id="f-lender">${memberOptions || `<option value="">No other members</option>`}</select>
+    </div>` : ""}
+    <div class="form-group">
+      <label>Dates</label>
+      <div class="row">
+        <div>
+          <label style="font-size:.75rem;font-weight:500;color:var(--muted);display:block;margin-bottom:3px">Needed on</label>
+          <input id="f-needed" type="date" value="${req?.needed_date ?? ""}" />
+        </div>
+        <div>
+          <label style="font-size:.75rem;font-weight:500;color:var(--muted);display:block;margin-bottom:3px">Return by</label>
+          <input id="f-return" type="date" value="${req?.return_date ?? ""}" />
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Condition upon return</label>
+      <div class="condition-grid" id="condition-grid">${conditionHtml}</div>
+    </div>
+    <div class="form-group">
+      <label>If not returned <span style="font-weight:400;text-transform:none">(optional)</span></label>
+      <input id="f-consequence" type="text" value="${esc(req?.if_not_returned ?? "")}" placeholder="Pay replacement cost, bake a cake…" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitForm('${req?.id ?? ""}')">
+        ${isEdit ? "Save Changes" : "Create Request"}
+      </button>
+    </div>
+  `);
+
+  modalEl.querySelectorAll(".condition-toggle input").forEach(cb => {
+    cb.addEventListener("change", () => {
+      cb.closest(".condition-toggle").classList.toggle("selected", cb.checked);
+    });
+  });
+}
+
+window.submitForm = async function(existingId) {
+  const item_name        = document.getElementById("f-item").value.trim();
+  const item_description = document.getElementById("f-desc").value.trim();
+  const needed_date      = document.getElementById("f-needed").value;
+  const return_date      = document.getElementById("f-return").value;
+  const return_condition = [...document.querySelectorAll(".condition-toggle input:checked")].map(cb => cb.value);
+  const if_not_returned  = document.getElementById("f-consequence").value.trim();
+
+  if (!item_name)   { document.getElementById("f-item").focus();   return; }
+  if (!needed_date) { document.getElementById("f-needed").focus(); return; }
+  if (!return_date) { document.getElementById("f-return").focus(); return; }
+
+  if (existingId) {
+    await updateRequest(existingId, { item_name, item_description, needed_date, return_date, return_condition, if_not_returned });
+  } else {
+    const lenderEl = document.getElementById("f-lender");
+    const lender_id = lenderEl?.value;
+    if (!lender_id) return;
+    await createRequest({ item_name, item_description, lender_id, needed_date, return_date, return_condition, if_not_returned });
+  }
+};
+
+// ─── Detail modal ─────────────────────────────────────────────────────────
+function openDetailModal(req) {
+  const borrower    = members.find(m => m.id === req.borrower_id);
+  const lender      = members.find(m => m.id === req.lender_id);
+  const isBorrower  = ME?.id === req.borrower_id;
+  const isLender    = ME?.id === req.lender_id;
+  const involved    = isBorrower || isLender;
+  const myAgreed    = isBorrower ? req.borrower_agreed : req.lender_agreed;
+  const canEdit     = req.status === "pending" && involved;
+  const canAgree    = req.status === "pending" && involved;
+  const canReturn   = req.status === "locked"  && involved;
+  const canCancel   = (req.status === "pending" || req.status === "locked") && involved;
+
+  const conditionLabels = (req.return_condition ?? []).map(v => {
+    const opt = CONDITION_OPTIONS.find(o => o.value === v);
+    return opt ? opt.label : v;
+  });
+
+  const agreementHtml = `
+    <div class="agreement-row">
+      <div class="agreement-person ${req.borrower_agreed ? "agreed" : ""}">
+        <div class="avatar sm" style="background:${mc(req.borrower_id)}">${initial(borrower?.name ?? "?")}</div>
+        <span>${esc(borrower?.name ?? "?")}</span>
+        <span class="agree-check">${req.borrower_agreed ? "✓ Agreed" : "Pending"}</span>
+      </div>
+      <div class="agreement-person ${req.lender_agreed ? "agreed" : ""}">
+        <div class="avatar sm" style="background:${mc(req.lender_id)}">${initial(lender?.name ?? "?")}</div>
+        <span>${esc(lender?.name ?? "?")}</span>
+        <span class="agree-check">${req.lender_agreed ? "✓ Agreed" : "Pending"}</span>
+      </div>
+    </div>
+  `;
+
+  openModal(`
+    <div class="detail-header">
+      <div>
+        <h3>${esc(req.item_name)}</h3>
+        <div style="margin-top:5px">${statusHtml(req.status)}</div>
+      </div>
+      ${canEdit ? `<button class="btn btn-ghost btn-sm" onclick="openEditForm('${req.id}')">Edit</button>` : ""}
+    </div>
+
+    ${req.item_description ? `<p class="detail-desc">${esc(req.item_description)}</p>` : ""}
+
+    <div class="detail-grid">
+      <div class="detail-field">
+        <div class="detail-label">Borrower</div>
+        <div class="detail-value member-inline">
+          <div class="avatar sm" style="background:${mc(req.borrower_id)}">${initial(borrower?.name ?? "?")}</div>
+          ${esc(borrower?.name ?? "?")}
+        </div>
+      </div>
+      <div class="detail-field">
+        <div class="detail-label">Lender</div>
+        <div class="detail-value member-inline">
+          <div class="avatar sm" style="background:${mc(req.lender_id)}">${initial(lender?.name ?? "?")}</div>
+          ${esc(lender?.name ?? "?")}
+        </div>
+      </div>
+      <div class="detail-field">
+        <div class="detail-label">Needed on</div>
+        <div class="detail-value">${formatDate(req.needed_date)}</div>
+      </div>
+      <div class="detail-field">
+        <div class="detail-label">Return by</div>
+        <div class="detail-value">${formatDate(req.return_date)}</div>
+      </div>
+    </div>
+
+    ${conditionLabels.length > 0 ? `
+    <div class="detail-section">
+      <div class="detail-label">Return condition</div>
+      <div class="condition-pills">${conditionLabels.map(l => `<span class="condition-pill">${l}</span>`).join("")}</div>
+    </div>` : ""}
+
+    ${req.if_not_returned ? `
+    <div class="detail-section">
+      <div class="detail-label">If not returned</div>
+      <div class="detail-value" style="font-style:italic">${esc(req.if_not_returned)}</div>
+    </div>` : ""}
+
+    <div class="detail-section">
+      <div class="detail-label">Agreements</div>
+      ${agreementHtml}
+    </div>
+
+    ${req.locked_at ? `<div class="locked-notice">🔒 Locked on ${formatDate(req.locked_at.split("T")[0])}</div>` : ""}
+
+    <div class="modal-actions">
+      ${canAgree && !myAgreed ? `<button class="btn btn-success" onclick="agreeRequest('${req.id}')">✓ I Agree</button>` : ""}
+      ${canAgree && myAgreed  ? `<button class="btn btn-ghost"   onclick="withdrawAgreement('${req.id}')">Withdraw Agreement</button>` : ""}
+      ${canReturn              ? `<button class="btn btn-primary" onclick="markReturned('${req.id}')">Mark Returned</button>` : ""}
+      ${canCancel              ? `<button class="btn btn-danger btn-sm" onclick="cancelRequest('${req.id}')">Cancel</button>` : ""}
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+    </div>
+  `);
+}
+
+window.openEditForm = function(reqId) {
+  const req = requests.find(r => r.id === reqId);
+  closeModal();
+  if (req) openRequestForm(req);
+};
+
+window.agreeRequest       = agreeRequest;
+window.withdrawAgreement  = withdrawAgreement;
+window.markReturned       = markReturned;
+window.cancelRequest      = cancelRequest;
+window.closeModal         = closeModal;
+
+// ─── Render ───────────────────────────────────────────────────────────────
+function renderRequestCard(req) {
+  const isBorrower  = ME?.id === req.borrower_id;
+  const otherId     = isBorrower ? req.lender_id : req.borrower_id;
+  const otherName   = memberName(otherId);
+  const roleLabel   = isBorrower ? "from" : "to";
+  const myAgreed    = isBorrower ? req.borrower_agreed : req.lender_agreed;
+  const theirAgreed = isBorrower ? req.lender_agreed   : req.borrower_agreed;
+  const needsAction = req.status === "pending" && !myAgreed;
+
+  return `
+    <div class="request-card ${needsAction ? "needs-action" : ""}" onclick="openDetailModal('${req.id}')">
+      <div class="request-main">
+        <div class="request-item">${esc(req.item_name)}</div>
+        <div class="request-meta">
+          <div class="avatar xs" style="background:${mc(otherId)}">${initial(otherName)}</div>
+          ${roleLabel} ${esc(otherName)}
+        </div>
+        <div class="request-dates">${formatDate(req.needed_date)} → ${formatDate(req.return_date)}</div>
+      </div>
+      <div class="request-right">
+        ${statusHtml(req.status)}
+        ${req.status === "pending" ? `
+        <div class="agree-dots" title="Agreements: borrower / lender">
+          <span class="agree-dot ${(isBorrower ? myAgreed : theirAgreed) ? "on" : ""}"></span>
+          <span class="agree-dot ${(isBorrower ? theirAgreed : myAgreed) ? "on" : ""}"></span>
+        </div>` : ""}
+        ${needsAction ? `<div class="action-needed">Needs your approval</div>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  if (!ME) {
+    document.getElementById("root").innerHTML = `<div class="empty">Please log in to use Borrowing.</div>`;
+    return;
+  }
+
+  const forMe  = requests.filter(r => r.lender_id   === ME.id && r.status !== "cancelled");
+  const fromMe = requests.filter(r => r.borrower_id === ME.id && r.status !== "cancelled");
+
+  const forMeBadge  = forMe.filter(r => r.status === "pending" && !r.lender_agreed).length;
+  const fromMeBadge = fromMe.filter(r => r.status === "pending" && !r.borrower_agreed).length;
+
+  const list = (activeTab === "for-me" ? forMe : fromMe);
+
+  const listHtml = list.length === 0
+    ? `<div class="empty">${activeTab === "for-me"
+        ? "No one has asked to borrow anything from you."
+        : "You haven't made any borrow requests yet."}</div>`
+    : list.map(r => renderRequestCard(r)).join("");
+
+  document.getElementById("root").innerHTML = `
+    <header>
+      <div>
+        <h1>🤝 Borrowing</h1>
+        <div class="sub">Track borrowed items &amp; agreements</div>
+      </div>
+      <button class="btn btn-ghost"
+        style="background:rgba(255,255,255,.15);color:white;border-color:rgba(255,255,255,.3)"
+        onclick="openNewRequest()">+ Request</button>
+    </header>
+
+    <div class="tabs">
+      <button class="tab ${activeTab === "for-me" ? "active" : ""}" onclick="setTab('for-me')">
+        For Me ${forMeBadge > 0 ? `<span class="tab-badge">${forMeBadge}</span>` : ""}
+      </button>
+      <button class="tab ${activeTab === "from-me" ? "active" : ""}" onclick="setTab('from-me')">
+        From Me ${fromMeBadge > 0 ? `<span class="tab-badge">${fromMeBadge}</span>` : ""}
+      </button>
+    </div>
+
+    <div>${listHtml}</div>
+  `;
+}
+
+window.setTab = function(tab) { activeTab = tab; render(); };
+window.openNewRequest = function() { openRequestForm(); };
+window.openDetailModal = function(id) {
+  const req = requests.find(r => r.id === id);
+  if (req) openDetailModal(req);
+};
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+(async () => {
+  await loadMembers();
+  if (DB) {
+    await initDb();
+    await loadRequests();
+  }
+  render();
+})();
+</script>
+</body>
+</html>

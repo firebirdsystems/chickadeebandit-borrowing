@@ -1,0 +1,26 @@
+{
+  "id": "borrowing",
+  "name": "Borrowing",
+  "version": "1.0.0",
+  "description": "Request to borrow items from family members with agreed return conditions, dates, and consequences. Both parties must agree before the request is locked.",
+  "entrypoint": "index.html",
+  "runtime": "static",
+  "category": "family",
+  "tags": ["borrowing", "lending", "agreements", "items"],
+  "data_access": {
+    "reads": ["family.members"],
+    "writes": []
+  },
+  "permissions": {
+    "default_audience": "everyone",
+    "requires_approval": false
+  },
+  "storage": "db",
+  "publishes": ["borrowing.agreed", "borrowing.returned"],
+  "alert_on": ["borrowing.agreed", "borrowing.returned"],
+  "nav": { "label": "Borrowing", "icon": "🤝" },
+  "widget": { "label": "Borrowing", "size": "small" },
+  "resource_limits": {
+    "max_db_bytes": 52428800
+  }
+}
