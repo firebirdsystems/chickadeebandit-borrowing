@@ -416,7 +416,7 @@
 </div>
 
 <script type="module">
-import { memberColor, initial, esc } from "/hub-sdk.js";
+import { memberColor, initial, esc, hubConfirm } from "/hub-sdk.js";
 
 const CONTEXT = window.__CONTEXT_URL ?? "";
 const DB      = window.__DB_URL      ?? "";
@@ -618,7 +618,7 @@ async function withdrawAgreement(reqId) {
 }
 
 async function markReturned(reqId) {
-  if (!confirm("Mark this item as returned?")) return;
+  if (!await hubConfirm({ message: "Mark this item as returned?", confirmLabel: "Mark returned" })) return;
   const req = requests.find(r => r.id === reqId);
   const now = new Date().toISOString();
   await db(`UPDATE requests SET status = 'returned', updated_at = ? WHERE id = ?`, [now, reqId]);
@@ -635,7 +635,7 @@ async function markReturned(reqId) {
 }
 
 async function cancelRequest(reqId) {
-  if (!confirm("Cancel this borrowing request?")) return;
+  if (!await hubConfirm({ message: "Cancel this borrowing request?", confirmLabel: "Cancel request" })) return;
   const req = requests.find(r => r.id === reqId);
   const now = new Date().toISOString();
   await db(`UPDATE requests SET status = 'cancelled', updated_at = ? WHERE id = ?`, [now, reqId]);
