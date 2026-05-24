@@ -503,6 +503,14 @@ async function notify(title, body) {
   }).catch(() => {});
 }
 
+async function publishEvent(type, subjectId, payload = {}) {
+  await fetch("/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source_app_id: APP_ID, type, subject_id: subjectId, payload }),
+  }).catch(() => {});
+}
+
 // ─── Activity log ─────────────────────────────────────────────────────────
 async function logActivity(requestId, action, detail = "") {
   const id = crypto.randomUUID();
@@ -531,6 +539,7 @@ async function createRequest(fields) {
       `${ME.name} wants to borrow something`,
       `${ME.name} is requesting to borrow "${fields.item_name}" from ${memberName(fields.lender_id)} — open Borrowing to review`,
     ),
+    publishEvent("borrowing.requested", id, { borrower: ME.name, item: fields.item_name, lender_id: fields.lender_id }),
     loadRequests(),
   ]);
   closeModal();
@@ -584,6 +593,7 @@ async function agreeRequest(reqId) {
         `🔒 Borrow request locked!`,
         `Both ${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
       ),
+      publishEvent("borrowing.agreed", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id }),
       loadRequests(),
     ]);
   } else {
@@ -631,6 +641,7 @@ async function markReturned(reqId) {
   await Promise.all([
     logActivity(reqId, "returned", `${ME.name} marked the item as returned`),
     req ? notify(`Item returned`, `${ME.name} marked "${req.item_name}" as returned`) : Promise.resolve(),
+    req ? publishEvent("borrowing.returned", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id }) : Promise.resolve(),
     loadRequests(),
   ]);
   closeModal();

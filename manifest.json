@@ -24,10 +24,12 @@
   },
   "storage": "db",
   "publishes": [
+    "borrowing.requested",
     "borrowing.agreed",
     "borrowing.returned"
   ],
   "alert_on": [
+    "borrowing.requested",
     "borrowing.agreed",
     "borrowing.returned"
   ],
