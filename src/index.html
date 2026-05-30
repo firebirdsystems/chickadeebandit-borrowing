@@ -541,6 +541,15 @@ async function createRequest(fields) {
     ),
     publishEvent("borrowing.requested", id, { borrower: ME.name, item: fields.item_name, lender_id: fields.lender_id }),
     loadRequests(),
+    fetch("/api/activity", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "message_posted",
+        actor: ME.name,
+        description: `${ME.name} requested to borrow "${fields.item_name}" from ${memberName(fields.lender_id)}`,
+        metadata: { deepLink: { appId: APP_ID, params: { requestId: id } } },
+      }),
+    }).catch(() => {}),
   ]);
   closeModal();
   render();
@@ -595,6 +604,15 @@ async function agreeRequest(reqId) {
       ),
       publishEvent("borrowing.agreed", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id }),
       loadRequests(),
+      fetch("/api/activity", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "message_posted",
+          actor: ME.name,
+          description: `${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
+          metadata: { deepLink: { appId: APP_ID, params: { requestId: reqId } } },
+        }),
+      }).catch(() => {}),
     ]);
   } else {
     const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
@@ -643,6 +661,15 @@ async function markReturned(reqId) {
     req ? notify(`Item returned`, `${ME.name} marked "${req.item_name}" as returned`) : Promise.resolve(),
     req ? publishEvent("borrowing.returned", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id }) : Promise.resolve(),
     loadRequests(),
+    req ? fetch("/api/activity", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "message_posted",
+        actor: ME.name,
+        description: `${ME.name} returned "${req.item_name}" to ${memberName(req.lender_id)}`,
+        metadata: { deepLink: { appId: APP_ID, params: { requestId: reqId } } },
+      }),
+    }).catch(() => {}) : Promise.resolve(),
   ]);
   closeModal();
   render();
@@ -964,6 +991,14 @@ window.openDetailModal = function(id) {
   if (req) openDetailModal(req);
 };
 
+// ─── Deep link ────────────────────────────────────────────────────────────
+function handleDeepLink() {
+  const requestId = new URLSearchParams(window.location.search).get("requestId");
+  if (!requestId) return;
+  const req = requests.find(r => r.id === requestId);
+  if (req) openDetailModal(req);
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────
 (async () => {
   await loadMembers();
@@ -972,6 +1007,7 @@ window.openDetailModal = function(id) {
     await loadRequests();
   }
   render();
+  handleDeepLink();
 })();
 </script>
 </body>
