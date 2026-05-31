@@ -504,10 +504,10 @@ async function notify(title, body) {
 }
 
 async function publishEvent(type, subjectId, payload = {}) {
-  await fetch("/api/events", {
+  await fetch(`/run/${APP_ID}/api/events`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ source_app_id: APP_ID, type, subject_id: subjectId, payload }),
+    body: JSON.stringify({ type, subject_id: subjectId, payload }),
   }).catch(() => {});
 }
 
