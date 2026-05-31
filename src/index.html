@@ -527,7 +527,7 @@ async function createRequest(fields) {
     id, item_name, item_description, borrower_id, lender_id,
     needed_date, return_date, return_condition, if_not_returned,
     status, borrower_agreed, lender_agreed, created_at, updated_at
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 0, ?, ?)`, [
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 1, 0, ?, ?)`, [
     id, fields.item_name, fields.item_description, ME.id, fields.lender_id,
     fields.needed_date, fields.return_date,
     JSON.stringify(fields.return_condition), fields.if_not_returned,
@@ -556,25 +556,30 @@ async function createRequest(fields) {
 }
 
 async function updateRequest(reqId, fields) {
+  const req = requests.find(r => r.id === reqId);
+  if (!req) return;
+  const isBorrower = ME.id === req.borrower_id;
   const now = new Date().toISOString();
   await db(`UPDATE requests SET
     item_name = ?, item_description = ?,
     needed_date = ?, return_date = ?,
     return_condition = ?, if_not_returned = ?,
-    borrower_agreed = 0, lender_agreed = 0,
+    borrower_agreed = ?, lender_agreed = ?,
     updated_at = ?
     WHERE id = ? AND status = 'pending'`,
   [
     fields.item_name, fields.item_description,
     fields.needed_date, fields.return_date,
     JSON.stringify(fields.return_condition), fields.if_not_returned,
+    isBorrower ? 1 : 0, isBorrower ? 0 : 1,
     now, reqId,
   ]);
+  const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
   await Promise.all([
-    logActivity(reqId, "updated", `${ME.name} updated the request — both parties must re-agree`),
+    logActivity(reqId, "updated", `${ME.name} updated the request — waiting for ${otherName} to re-agree`),
     notify(
-      `Borrow request updated — re-agreement required`,
-      `${ME.name} updated the request for "${fields.item_name}". Both parties must agree again.`,
+      `Borrow request updated`,
+      `${ME.name} updated the request for "${fields.item_name}". Please review and agree to the new terms.`,
     ),
     loadRequests(),
   ]);
