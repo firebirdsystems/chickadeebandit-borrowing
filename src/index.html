@@ -523,7 +523,21 @@ async function logActivity(requestId, action, detail = "") {
 async function createRequest(fields) {
   const id  = crypto.randomUUID();
   const now = new Date().toISOString();
-  await db(`INSERT INTO requests (
+
+  // Optimistic: prepend new request to local state
+  requests.unshift({
+    id, item_name: fields.item_name, item_description: fields.item_description,
+    borrower_id: ME.id, lender_id: fields.lender_id,
+    needed_date: fields.needed_date, return_date: fields.return_date,
+    return_condition: fields.return_condition, if_not_returned: fields.if_not_returned,
+    status: "pending", borrower_agreed: true, lender_agreed: false,
+    created_at: now, updated_at: now, locked_at: null,
+  });
+  closeModal();
+  render();
+
+  // Persist, then sync to confirmed server state
+  db(`INSERT INTO requests (
     id, item_name, item_description, borrower_id, lender_id,
     needed_date, return_date, return_condition, if_not_returned,
     status, borrower_agreed, lender_agreed, created_at, updated_at
@@ -532,27 +546,24 @@ async function createRequest(fields) {
     fields.needed_date, fields.return_date,
     JSON.stringify(fields.return_condition), fields.if_not_returned,
     now, now,
-  ]);
-  await Promise.all([
-    logActivity(id, "created", `${ME.name} requested to borrow "${fields.item_name}"`),
-    notify(
-      `${ME.name} wants to borrow something`,
-      `${ME.name} is requesting to borrow "${fields.item_name}" from ${memberName(fields.lender_id)} — open Borrowing to review`,
-    ),
-    publishEvent("borrowing.requested", id, { borrower: ME.name, item: fields.item_name, lender_id: fields.lender_id }),
-    loadRequests(),
-    fetch("/api/activity", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "message_posted",
-        actor: ME.name,
-        description: `${ME.name} requested to borrow "${fields.item_name}" from ${memberName(fields.lender_id)}`,
-        metadata: { deepLink: { appId: APP_ID, params: { requestId: id } } },
-      }),
-    }).catch(() => {}),
-  ]);
-  closeModal();
-  render();
+  ]).then(() => loadRequests().then(render));
+
+  // Fire-and-forget side effects
+  logActivity(id, "created", `${ME.name} requested to borrow "${fields.item_name}"`).catch(() => {});
+  notify(
+    `${ME.name} wants to borrow something`,
+    `${ME.name} is requesting to borrow "${fields.item_name}" from ${memberName(fields.lender_id)} — open Borrowing to review`,
+  ).catch(() => {});
+  publishEvent("borrowing.requested", id, { borrower: ME.name, item: fields.item_name, lender_id: fields.lender_id });
+  fetch("/api/activity", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "message_posted",
+      actor: ME.name,
+      description: `${ME.name} requested to borrow "${fields.item_name}" from ${memberName(fields.lender_id)}`,
+      metadata: { deepLink: { appId: APP_ID, params: { requestId: id } } },
+    }),
+  }).catch(() => {});
 }
 
 async function updateRequest(reqId, fields) {
@@ -560,7 +571,21 @@ async function updateRequest(reqId, fields) {
   if (!req) return;
   const isBorrower = ME.id === req.borrower_id;
   const now = new Date().toISOString();
-  await db(`UPDATE requests SET
+
+  // Optimistic update
+  Object.assign(req, {
+    item_name: fields.item_name, item_description: fields.item_description,
+    needed_date: fields.needed_date, return_date: fields.return_date,
+    return_condition: fields.return_condition, if_not_returned: fields.if_not_returned,
+    borrower_agreed: isBorrower, lender_agreed: !isBorrower,
+    updated_at: now,
+  });
+  closeModal();
+  render();
+
+  // Persist, then sync
+  const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
+  db(`UPDATE requests SET
     item_name = ?, item_description = ?,
     needed_date = ?, return_date = ?,
     return_condition = ?, if_not_returned = ?,
@@ -573,18 +598,14 @@ async function updateRequest(reqId, fields) {
     JSON.stringify(fields.return_condition), fields.if_not_returned,
     isBorrower ? 1 : 0, isBorrower ? 0 : 1,
     now, reqId,
-  ]);
-  const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
-  await Promise.all([
-    logActivity(reqId, "updated", `${ME.name} updated the request — waiting for ${otherName} to re-agree`),
-    notify(
-      `Borrow request updated`,
-      `${ME.name} updated the request for "${fields.item_name}". Please review and agree to the new terms.`,
-    ),
-    loadRequests(),
-  ]);
-  closeModal();
-  render();
+  ]).then(() => loadRequests().then(render));
+
+  // Fire-and-forget side effects
+  logActivity(reqId, "updated", `${ME.name} updated the request — waiting for ${otherName} to re-agree`).catch(() => {});
+  notify(
+    `Borrow request updated`,
+    `${ME.name} updated the request for "${fields.item_name}". Please review and agree to the new terms.`,
+  ).catch(() => {});
 }
 
 async function agreeRequest(reqId) {
@@ -596,43 +617,45 @@ async function agreeRequest(reqId) {
   const theirAgreed = isBorrower ? req.lender_agreed : req.borrower_agreed;
   const now = new Date().toISOString();
 
-  await db(`UPDATE requests SET ${myField} = 1, updated_at = ? WHERE id = ?`, [now, reqId]);
-
-  if (theirAgreed) {
-    await db(`UPDATE requests SET status = 'locked', locked_at = ?, updated_at = ? WHERE id = ?`, [now, now, reqId]);
-    await Promise.all([
-      logActivity(reqId, "agreed", `${ME.name} agreed to the terms`),
-      logActivity(reqId, "locked", "Both parties agreed — request is now locked"),
-      notify(
-        `🔒 Borrow request locked!`,
-        `Both ${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
-      ),
-      publishEvent("borrowing.agreed", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id }),
-      loadRequests(),
-      fetch("/api/activity", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "message_posted",
-          actor: ME.name,
-          description: `${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
-          metadata: { deepLink: { appId: APP_ID, params: { requestId: reqId } } },
-        }),
-      }).catch(() => {}),
-    ]);
-  } else {
-    const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
-    await Promise.all([
-      logActivity(reqId, "agreed", `${ME.name} agreed to the terms`),
-      notify(
-        `${ME.name} agreed to the borrow request`,
-        `${ME.name} agreed to the terms for "${req.item_name}" — waiting for ${otherName} to agree`,
-      ),
-      loadRequests(),
-    ]);
-  }
-
+  // Optimistic update
+  if (isBorrower) req.borrower_agreed = true; else req.lender_agreed = true;
+  if (theirAgreed) { req.status = "locked"; req.locked_at = now; }
+  req.updated_at = now;
   closeModal();
   render();
+
+  // Parallel DB writes (independent: one sets agreement flag, one sets status)
+  const dbOps = [db(`UPDATE requests SET ${myField} = 1, updated_at = ? WHERE id = ?`, [now, reqId])];
+  if (theirAgreed) {
+    dbOps.push(db(`UPDATE requests SET status = 'locked', locked_at = ?, updated_at = ? WHERE id = ?`, [now, now, reqId]));
+  }
+  Promise.all(dbOps).then(() => loadRequests().then(render));
+
+  // Fire-and-forget side effects
+  logActivity(reqId, "agreed", `${ME.name} agreed to the terms`).catch(() => {});
+  if (theirAgreed) {
+    logActivity(reqId, "locked", "Both parties agreed — request is now locked").catch(() => {});
+    notify(
+      `🔒 Borrow request locked!`,
+      `Both ${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
+    ).catch(() => {});
+    publishEvent("borrowing.agreed", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id });
+    fetch("/api/activity", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "message_posted",
+        actor: ME.name,
+        description: `${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
+        metadata: { deepLink: { appId: APP_ID, params: { requestId: reqId } } },
+      }),
+    }).catch(() => {});
+  } else {
+    const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
+    notify(
+      `${ME.name} agreed to the borrow request`,
+      `${ME.name} agreed to the terms for "${req.item_name}" — waiting for ${otherName} to agree`,
+    ).catch(() => {});
+  }
 }
 
 async function withdrawAgreement(reqId) {
@@ -643,30 +666,38 @@ async function withdrawAgreement(reqId) {
   const myField    = isBorrower ? "borrower_agreed" : "lender_agreed";
   const now = new Date().toISOString();
 
-  await db(`UPDATE requests SET ${myField} = 0, updated_at = ? WHERE id = ?`, [now, reqId]);
-  await Promise.all([
-    logActivity(reqId, "withdrawn", `${ME.name} withdrew their agreement`),
-    notify(
-      `Agreement withdrawn`,
-      `${ME.name} withdrew their agreement for the borrow of "${req.item_name}"`,
-    ),
-    loadRequests(),
-  ]);
+  // Optimistic update
+  if (isBorrower) req.borrower_agreed = false; else req.lender_agreed = false;
+  req.updated_at = now;
   closeModal();
   render();
+
+  db(`UPDATE requests SET ${myField} = 0, updated_at = ? WHERE id = ?`, [now, reqId])
+    .then(() => loadRequests().then(render));
+  logActivity(reqId, "withdrawn", `${ME.name} withdrew their agreement`).catch(() => {});
+  notify(
+    `Agreement withdrawn`,
+    `${ME.name} withdrew their agreement for the borrow of "${req.item_name}"`,
+  ).catch(() => {});
 }
 
 async function markReturned(reqId) {
   if (!await hubConfirm({ message: "Mark this item as returned?", confirmLabel: "Mark returned" })) return;
   const req = requests.find(r => r.id === reqId);
   const now = new Date().toISOString();
-  await db(`UPDATE requests SET status = 'returned', updated_at = ? WHERE id = ?`, [now, reqId]);
-  await Promise.all([
-    logActivity(reqId, "returned", `${ME.name} marked the item as returned`),
-    req ? notify(`Item returned`, `${ME.name} marked "${req.item_name}" as returned`) : Promise.resolve(),
-    req ? publishEvent("borrowing.returned", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id }) : Promise.resolve(),
-    loadRequests(),
-    req ? fetch("/api/activity", {
+
+  // Optimistic update
+  if (req) { req.status = "returned"; req.updated_at = now; }
+  closeModal();
+  render();
+
+  db(`UPDATE requests SET status = 'returned', updated_at = ? WHERE id = ?`, [now, reqId])
+    .then(() => loadRequests().then(render));
+  if (req) {
+    logActivity(reqId, "returned", `${ME.name} marked the item as returned`).catch(() => {});
+    notify(`Item returned`, `${ME.name} marked "${req.item_name}" as returned`).catch(() => {});
+    publishEvent("borrowing.returned", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id });
+    fetch("/api/activity", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "message_posted",
@@ -674,24 +705,26 @@ async function markReturned(reqId) {
         description: `${ME.name} returned "${req.item_name}" to ${memberName(req.lender_id)}`,
         metadata: { deepLink: { appId: APP_ID, params: { requestId: reqId } } },
       }),
-    }).catch(() => {}) : Promise.resolve(),
-  ]);
-  closeModal();
-  render();
+    }).catch(() => {});
+  }
 }
 
 async function cancelRequest(reqId) {
   if (!await hubConfirm({ message: "Cancel this borrowing request?", confirmLabel: "Cancel request" })) return;
   const req = requests.find(r => r.id === reqId);
   const now = new Date().toISOString();
-  await db(`UPDATE requests SET status = 'cancelled', updated_at = ? WHERE id = ?`, [now, reqId]);
-  await Promise.all([
-    logActivity(reqId, "cancelled", `${ME.name} cancelled the request`),
-    req ? notify(`Borrow request cancelled`, `${ME.name} cancelled the request to borrow "${req.item_name}"`) : Promise.resolve(),
-    loadRequests(),
-  ]);
+
+  // Optimistic update
+  if (req) { req.status = "cancelled"; req.updated_at = now; }
   closeModal();
   render();
+
+  db(`UPDATE requests SET status = 'cancelled', updated_at = ? WHERE id = ?`, [now, reqId])
+    .then(() => loadRequests().then(render));
+  logActivity(reqId, "cancelled", `${ME.name} cancelled the request`).catch(() => {});
+  if (req) {
+    notify(`Borrow request cancelled`, `${ME.name} cancelled the request to borrow "${req.item_name}"`).catch(() => {});
+  }
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────
@@ -1006,11 +1039,7 @@ function handleDeepLink() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 (async () => {
-  await loadMembers();
-  if (DB) {
-    await initDb();
-    await loadRequests();
-  }
+  await Promise.all([loadMembers(), DB ? loadRequests() : Promise.resolve()]);
   render();
   handleDeepLink();
 })();
