@@ -109,7 +109,7 @@ async function load() {
   const [members, { rows }] = await Promise.all([
     loadMembers(),
     dbq(`SELECT id, item_name, borrower_id, lender_id, return_date, status
-         FROM requests
+         FROM app_borrowing__requests
          WHERE status IN ('pending','locked')
          ORDER BY CASE status WHEN 'locked' THEN 0 ELSE 1 END, return_date ASC
          LIMIT 20`),

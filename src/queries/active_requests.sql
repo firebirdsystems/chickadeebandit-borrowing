@@ -13,8 +13,7 @@ SELECT
   locked_at,
   created_at,
   updated_at
-FROM requests
-WHERE household_id = current_setting('app.household_id', true)::uuid
-  AND status NOT IN ('returned', 'cancelled')
+FROM app_borrowing__requests
+WHERE status NOT IN ('returned', 'cancelled')
 ORDER BY needed_date ASC
 LIMIT 100

@@ -469,7 +469,7 @@ async function loadMembers() {
 async function loadRequests() {
   if (!DB || !ME) return;
   const { rows } = await db(`
-    SELECT * FROM requests
+    SELECT * FROM app_borrowing__requests
     WHERE (borrower_id = ? OR lender_id = ?)
     ORDER BY
       CASE status WHEN 'pending' THEN 0 WHEN 'locked' THEN 1 ELSE 2 END,
@@ -514,7 +514,7 @@ async function publishEvent(type, subjectId, payload = {}) {
 // ─── Activity log ─────────────────────────────────────────────────────────
 async function logActivity(requestId, action, detail = "") {
   const id = crypto.randomUUID();
-  await db(`INSERT INTO activity (id, request_id, actor_id, action, detail, created_at)
+  await db(`INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at)
             VALUES (?, ?, ?, ?, ?, ?)`,
     [id, requestId, ME?.id ?? "system", action, detail, new Date().toISOString()]);
 }
@@ -537,7 +537,7 @@ async function createRequest(fields) {
   render();
 
   // Persist, then sync to confirmed server state
-  db(`INSERT INTO requests (
+  db(`INSERT INTO app_borrowing__requests (
     id, item_name, item_description, borrower_id, lender_id,
     needed_date, return_date, return_condition, if_not_returned,
     status, borrower_agreed, lender_agreed, created_at, updated_at
@@ -585,7 +585,7 @@ async function updateRequest(reqId, fields) {
 
   // Persist, then sync
   const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
-  db(`UPDATE requests SET
+  db(`UPDATE app_borrowing__requests SET
     item_name = ?, item_description = ?,
     needed_date = ?, return_date = ?,
     return_condition = ?, if_not_returned = ?,
@@ -625,9 +625,9 @@ async function agreeRequest(reqId) {
   render();
 
   // Parallel DB writes (independent: one sets agreement flag, one sets status)
-  const dbOps = [db(`UPDATE requests SET ${myField} = 1, updated_at = ? WHERE id = ?`, [now, reqId])];
+  const dbOps = [db(`UPDATE app_borrowing__requests SET ${myField} = 1, updated_at = ? WHERE id = ?`, [now, reqId])];
   if (theirAgreed) {
-    dbOps.push(db(`UPDATE requests SET status = 'locked', locked_at = ?, updated_at = ? WHERE id = ?`, [now, now, reqId]));
+    dbOps.push(db(`UPDATE app_borrowing__requests SET status = 'locked', locked_at = ?, updated_at = ? WHERE id = ?`, [now, now, reqId]));
   }
   Promise.all(dbOps).then(() => loadRequests().then(render));
 
@@ -672,7 +672,7 @@ async function withdrawAgreement(reqId) {
   closeModal();
   render();
 
-  db(`UPDATE requests SET ${myField} = 0, updated_at = ? WHERE id = ?`, [now, reqId])
+  db(`UPDATE app_borrowing__requests SET ${myField} = 0, updated_at = ? WHERE id = ?`, [now, reqId])
     .then(() => loadRequests().then(render));
   logActivity(reqId, "withdrawn", `${ME.name} withdrew their agreement`).catch(() => {});
   notify(
@@ -691,7 +691,7 @@ async function markReturned(reqId) {
   closeModal();
   render();
 
-  db(`UPDATE requests SET status = 'returned', updated_at = ? WHERE id = ?`, [now, reqId])
+  db(`UPDATE app_borrowing__requests SET status = 'returned', updated_at = ? WHERE id = ?`, [now, reqId])
     .then(() => loadRequests().then(render));
   if (req) {
     logActivity(reqId, "returned", `${ME.name} marked the item as returned`).catch(() => {});
@@ -719,7 +719,7 @@ async function cancelRequest(reqId) {
   closeModal();
   render();
 
-  db(`UPDATE requests SET status = 'cancelled', updated_at = ? WHERE id = ?`, [now, reqId])
+  db(`UPDATE app_borrowing__requests SET status = 'cancelled', updated_at = ? WHERE id = ?`, [now, reqId])
     .then(() => loadRequests().then(render));
   logActivity(reqId, "cancelled", `${ME.name} cancelled the request`).catch(() => {});
   if (req) {
