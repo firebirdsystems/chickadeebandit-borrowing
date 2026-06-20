@@ -496,7 +496,7 @@ function statusHtml(status) {
 
 // ─── Notifications ────────────────────────────────────────────────────────
 async function notify(title, body) {
-  await fetch("/api/notifications/send", {
+  await fetch(window.__NOTIFY_URL ?? "/api/notifications/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, body, url: `/run/${APP_ID}` }),
@@ -555,7 +555,7 @@ async function createRequest(fields) {
     `${ME.name} is requesting to borrow "${fields.item_name}" from ${memberName(fields.lender_id)} — open Borrowing to review`,
   ).catch(() => {});
   publishEvent("borrowing.requested", id, { borrower: ME.name, item: fields.item_name, lender_id: fields.lender_id });
-  fetch("/api/activity", {
+  fetch(window.__ACTIVITY_URL ?? "/api/activity", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       type: "message_posted",
@@ -640,7 +640,7 @@ async function agreeRequest(reqId) {
       `Both ${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
     ).catch(() => {});
     publishEvent("borrowing.agreed", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id });
-    fetch("/api/activity", {
+    fetch(window.__ACTIVITY_URL ?? "/api/activity", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "message_posted",
@@ -697,7 +697,7 @@ async function markReturned(reqId) {
     logActivity(reqId, "returned", `${ME.name} marked the item as returned`).catch(() => {});
     notify(`Item returned`, `${ME.name} marked "${req.item_name}" as returned`).catch(() => {});
     publishEvent("borrowing.returned", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id });
-    fetch("/api/activity", {
+    fetch(window.__ACTIVITY_URL ?? "/api/activity", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "message_posted",
