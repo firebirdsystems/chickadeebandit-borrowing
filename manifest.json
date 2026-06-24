@@ -23,6 +23,29 @@
     "requires_approval": false
   },
   "storage": "db",
+  "row_policies": {
+    "requests": {
+      "kind": "party_scoped",
+      "member_columns": ["borrower_id", "lender_id"],
+      "self_column": "borrower_id"
+    },
+    "activity": {
+      "kind": "party_scoped",
+      "member_columns": ["actor_id"],
+      "self_column": "actor_id"
+    }
+  },
+  "agreements": {
+    "requests": {
+      "participant_columns": ["borrower_id", "lender_id"],
+      "agreement_columns": { "borrower_id": "borrower_agreed", "lender_id": "lender_agreed" },
+      "status_column": "status",
+      "pending_value": "pending",
+      "locked_value": "locked",
+      "locked_at_column": "locked_at",
+      "updated_at_column": "updated_at"
+    }
+  },
   "publishes": [
     "borrowing.requested",
     "borrowing.agreed",

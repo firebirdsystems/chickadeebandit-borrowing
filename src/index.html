@@ -445,6 +445,22 @@ async function db(sql, params = []) {
   return res.json();
 }
 
+// Set the caller's OWN agreement flag via the server endpoint. The server verifies
+// the caller is the borrower or lender and sets only their flag (locking when both
+// agree) — a member can't forge the other party's agreement.
+async function agreeOnServer(reqId, agreed) {
+  const res = await fetch(`/run/${APP_ID}/api/agree`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ table: "requests", id: reqId, agreed }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error || "Agreement update failed");
+  }
+  return res.json();
+}
+
 // ─── DB init ──────────────────────────────────────────────────────────────
 async function initDb() {
   // Schema is managed by hub migrations (migrations/001_init.sql)
@@ -613,7 +629,6 @@ async function agreeRequest(reqId) {
   if (!req || req.status !== "pending") return;
 
   const isBorrower  = req.borrower_id === ME.id;
-  const myField     = isBorrower ? "borrower_agreed" : "lender_agreed";
   const theirAgreed = isBorrower ? req.lender_agreed : req.borrower_agreed;
   const now = new Date().toISOString();
 
@@ -624,12 +639,8 @@ async function agreeRequest(reqId) {
   closeModal();
   render();
 
-  // Parallel DB writes (independent: one sets agreement flag, one sets status)
-  const dbOps = [db(`UPDATE app_borrowing__requests SET ${myField} = 1, updated_at = ? WHERE id = ?`, [now, reqId])];
-  if (theirAgreed) {
-    dbOps.push(db(`UPDATE app_borrowing__requests SET status = 'locked', locked_at = ?, updated_at = ? WHERE id = ?`, [now, now, reqId]));
-  }
-  Promise.all(dbOps).then(() => loadRequests().then(render));
+  // Persist via the server endpoint (sets only the caller's flag, locks when both agree).
+  agreeOnServer(reqId, true).then(() => loadRequests().then(render)).catch(() => loadRequests().then(render));
 
   // Fire-and-forget side effects
   logActivity(reqId, "agreed", `${ME.name} agreed to the terms`).catch(() => {});
@@ -663,7 +674,6 @@ async function withdrawAgreement(reqId) {
   if (!req || req.status !== "pending") return;
 
   const isBorrower = req.borrower_id === ME.id;
-  const myField    = isBorrower ? "borrower_agreed" : "lender_agreed";
   const now = new Date().toISOString();
 
   // Optimistic update
@@ -672,8 +682,7 @@ async function withdrawAgreement(reqId) {
   closeModal();
   render();
 
-  db(`UPDATE app_borrowing__requests SET ${myField} = 0, updated_at = ? WHERE id = ?`, [now, reqId])
-    .then(() => loadRequests().then(render));
+  agreeOnServer(reqId, false).then(() => loadRequests().then(render)).catch(() => loadRequests().then(render));
   logActivity(reqId, "withdrawn", `${ME.name} withdrew their agreement`).catch(() => {});
   notify(
     `Agreement withdrawn`,
