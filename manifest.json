@@ -29,22 +29,32 @@
       "member_columns": ["borrower_id", "lender_id"],
       "self_column": "borrower_id"
     },
+    "request_agreements": {
+      "kind": "endpoint_only",
+      "read": "everyone"
+    },
     "activity": {
       "kind": "party_scoped",
-      "member_columns": ["actor_id"],
+      "member_columns": ["actor_id", "borrower_id", "lender_id"],
       "self_column": "actor_id"
     }
   },
   "agreements": {
-    "requests": {
+    "request_agreements": {
       "participant_columns": ["borrower_id", "lender_id"],
       "agreement_columns": { "borrower_id": "borrower_agreed", "lender_id": "lender_agreed" },
       "status_column": "status",
       "pending_value": "pending",
       "locked_value": "locked",
       "locked_at_column": "locked_at",
-      "updated_at_column": "updated_at"
+      "updated_at_column": "updated_at",
+      "init_from_table": "requests",
+      "init_columns": ["borrower_id", "lender_id"]
     }
+  },
+  "publish_acls": {
+    "borrowing.agreed": { "require_role": "adult" },
+    "borrowing.returned": { "require_role": "adult" }
   },
   "publishes": [
     "borrowing.requested",

@@ -452,7 +452,7 @@ async function agreeOnServer(reqId, agreed) {
   const res = await fetch(`/run/${APP_ID}/api/agree`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ table: "requests", id: reqId, agreed }),
+    body: JSON.stringify({ table: "request_agreements", id: reqId, agreed }),
   });
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
@@ -484,12 +484,33 @@ async function loadMembers() {
 
 async function loadRequests() {
   if (!DB || !ME) return;
+  // JOIN with request_agreements (endpoint_only, read:everyone) so agreement/lock
+  // state is always read from the authoritative endpoint-only table.
   const { rows } = await db(`
-    SELECT * FROM app_borrowing__requests
-    WHERE (borrower_id = ? OR lender_id = ?)
+    SELECT
+      r.id, r.item_name, r.item_description,
+      r.borrower_id, r.lender_id,
+      r.needed_date, r.return_date,
+      r.return_condition, r.if_not_returned,
+      r.created_at, r.updated_at,
+      COALESCE(ra.borrower_agreed, 0) AS borrower_agreed,
+      COALESCE(ra.lender_agreed,   0) AS lender_agreed,
+      CASE
+        WHEN r.status IN ('cancelled','returned') THEN r.status
+        WHEN ra.status = 'locked'                 THEN 'locked'
+        ELSE 'pending'
+      END AS status,
+      ra.locked_at
+    FROM app_borrowing__requests r
+    LEFT JOIN app_borrowing__request_agreements ra ON ra.id = r.id
+    WHERE (r.borrower_id = ? OR r.lender_id = ?)
     ORDER BY
-      CASE status WHEN 'pending' THEN 0 WHEN 'locked' THEN 1 ELSE 2 END,
-      updated_at DESC
+      CASE
+        WHEN r.status IN ('cancelled','returned') THEN 2
+        WHEN ra.status = 'locked'                 THEN 1
+        ELSE 0
+      END,
+      r.updated_at DESC
   `, [ME.id, ME.id]);
   requests = rows.map(r => ({
     ...r,
@@ -528,11 +549,11 @@ async function publishEvent(type, subjectId, payload = {}) {
 }
 
 // ─── Activity log ─────────────────────────────────────────────────────────
-async function logActivity(requestId, action, detail = "") {
+async function logActivity(requestId, borrowerId, lenderId, action, detail = "") {
   const id = crypto.randomUUID();
-  await db(`INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-    [id, requestId, ME?.id ?? "system", action, detail, new Date().toISOString()]);
+  await db(`INSERT INTO app_borrowing__activity (id, request_id, actor_id, borrower_id, lender_id, action, detail, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, requestId, ME?.id ?? "system", borrowerId, lenderId, action, detail, new Date().toISOString()]);
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────
@@ -552,20 +573,21 @@ async function createRequest(fields) {
   closeModal();
   render();
 
-  // Persist, then sync to confirmed server state
+  // Persist, then bootstrap agreement row and sync
   db(`INSERT INTO app_borrowing__requests (
     id, item_name, item_description, borrower_id, lender_id,
     needed_date, return_date, return_condition, if_not_returned,
-    status, borrower_agreed, lender_agreed, created_at, updated_at
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 1, 0, ?, ?)`, [
+    status, created_at, updated_at
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`, [
     id, fields.item_name, fields.item_description, ME.id, fields.lender_id,
     fields.needed_date, fields.return_date,
     JSON.stringify(fields.return_condition), fields.if_not_returned,
     now, now,
-  ]).then(() => loadRequests().then(render));
+  ]).then(() => agreeOnServer(id, true))  // init_from_table creates request_agreements + sets borrower flag
+    .then(() => loadRequests().then(render));
 
   // Fire-and-forget side effects
-  logActivity(id, "created", `${ME.name} requested to borrow "${fields.item_name}"`).catch(() => {});
+  logActivity(id, ME.id, fields.lender_id, "created", `${ME.name} requested to borrow "${fields.item_name}"`).catch(() => {});
   notify(
     `${ME.name} wants to borrow something`,
     `${ME.name} is requesting to borrow "${fields.item_name}" from ${memberName(fields.lender_id)} — open Borrowing to review`,
@@ -599,25 +621,25 @@ async function updateRequest(reqId, fields) {
   closeModal();
   render();
 
-  // Persist, then sync
+  // Persist, then reset the editor's agreement and re-set it (other party's is implicitly cleared by api/agree logic)
   const otherName = isBorrower ? memberName(req.lender_id) : memberName(req.borrower_id);
   db(`UPDATE app_borrowing__requests SET
     item_name = ?, item_description = ?,
     needed_date = ?, return_date = ?,
     return_condition = ?, if_not_returned = ?,
-    borrower_agreed = ?, lender_agreed = ?,
     updated_at = ?
     WHERE id = ? AND status = 'pending'`,
   [
     fields.item_name, fields.item_description,
     fields.needed_date, fields.return_date,
     JSON.stringify(fields.return_condition), fields.if_not_returned,
-    isBorrower ? 1 : 0, isBorrower ? 0 : 1,
     now, reqId,
-  ]).then(() => loadRequests().then(render));
+  ]).then(() => agreeOnServer(reqId, false))  // withdraw own agreement (clears both sides if was locked)
+    .then(() => agreeOnServer(reqId, true))   // re-set editor's agreement
+    .then(() => loadRequests().then(render));
 
   // Fire-and-forget side effects
-  logActivity(reqId, "updated", `${ME.name} updated the request — waiting for ${otherName} to re-agree`).catch(() => {});
+  logActivity(reqId, req.borrower_id, req.lender_id, "updated", `${ME.name} updated the request — waiting for ${otherName} to re-agree`).catch(() => {});
   notify(
     `Borrow request updated`,
     `${ME.name} updated the request for "${fields.item_name}". Please review and agree to the new terms.`,
@@ -643,9 +665,9 @@ async function agreeRequest(reqId) {
   agreeOnServer(reqId, true).then(() => loadRequests().then(render)).catch(() => loadRequests().then(render));
 
   // Fire-and-forget side effects
-  logActivity(reqId, "agreed", `${ME.name} agreed to the terms`).catch(() => {});
+  logActivity(reqId, req.borrower_id, req.lender_id, "agreed", `${ME.name} agreed to the terms`).catch(() => {});
   if (theirAgreed) {
-    logActivity(reqId, "locked", "Both parties agreed — request is now locked").catch(() => {});
+    logActivity(reqId, req.borrower_id, req.lender_id, "locked", "Both parties agreed — request is now locked").catch(() => {});
     notify(
       `🔒 Borrow request locked!`,
       `Both ${memberName(req.borrower_id)} and ${memberName(req.lender_id)} agreed to the borrow of "${req.item_name}"`,
@@ -683,7 +705,7 @@ async function withdrawAgreement(reqId) {
   render();
 
   agreeOnServer(reqId, false).then(() => loadRequests().then(render)).catch(() => loadRequests().then(render));
-  logActivity(reqId, "withdrawn", `${ME.name} withdrew their agreement`).catch(() => {});
+  logActivity(reqId, req.borrower_id, req.lender_id, "withdrawn", `${ME.name} withdrew their agreement`).catch(() => {});
   notify(
     `Agreement withdrawn`,
     `${ME.name} withdrew their agreement for the borrow of "${req.item_name}"`,
@@ -703,7 +725,7 @@ async function markReturned(reqId) {
   db(`UPDATE app_borrowing__requests SET status = 'returned', updated_at = ? WHERE id = ?`, [now, reqId])
     .then(() => loadRequests().then(render));
   if (req) {
-    logActivity(reqId, "returned", `${ME.name} marked the item as returned`).catch(() => {});
+    logActivity(reqId, req.borrower_id, req.lender_id, "returned", `${ME.name} marked the item as returned`).catch(() => {});
     notify(`Item returned`, `${ME.name} marked "${req.item_name}" as returned`).catch(() => {});
     publishEvent("borrowing.returned", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id });
     fetch(window.__ACTIVITY_URL ?? "/api/activity", {
@@ -730,8 +752,8 @@ async function cancelRequest(reqId) {
 
   db(`UPDATE app_borrowing__requests SET status = 'cancelled', updated_at = ? WHERE id = ?`, [now, reqId])
     .then(() => loadRequests().then(render));
-  logActivity(reqId, "cancelled", `${ME.name} cancelled the request`).catch(() => {});
   if (req) {
+    logActivity(reqId, req.borrower_id, req.lender_id, "cancelled", `${ME.name} cancelled the request`).catch(() => {});
     notify(`Borrow request cancelled`, `${ME.name} cancelled the request to borrow "${req.item_name}"`).catch(() => {});
   }
 }
