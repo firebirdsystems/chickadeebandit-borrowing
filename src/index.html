@@ -486,13 +486,19 @@ async function loadRequests() {
   if (!DB || !ME) return;
   // JOIN with request_agreements (endpoint_only, read:everyone) so agreement/lock
   // state is always read from the authoritative endpoint-only table.
+  // For locked requests, read the agreed terms from the endpoint_only snapshot
+  // columns on request_agreements (frozen at lock time) rather than from the
+  // party_scoped requests row, which either party can still edit via raw /api/db.
   const { rows } = await db(`
     SELECT
-      r.id, r.item_name, r.item_description,
-      r.borrower_id, r.lender_id,
-      r.needed_date, r.return_date,
-      r.return_condition, r.if_not_returned,
+      r.id, r.borrower_id, r.lender_id,
       r.created_at, r.updated_at,
+      CASE WHEN ra.status = 'locked' THEN COALESCE(ra.item_name, r.item_name)               ELSE r.item_name        END AS item_name,
+      CASE WHEN ra.status = 'locked' THEN COALESCE(ra.item_description, r.item_description)  ELSE r.item_description  END AS item_description,
+      CASE WHEN ra.status = 'locked' THEN COALESCE(ra.needed_date, r.needed_date)           ELSE r.needed_date      END AS needed_date,
+      CASE WHEN ra.status = 'locked' THEN COALESCE(ra.return_date, r.return_date)           ELSE r.return_date      END AS return_date,
+      CASE WHEN ra.status = 'locked' THEN COALESCE(ra.return_condition, r.return_condition) ELSE r.return_condition END AS return_condition,
+      CASE WHEN ra.status = 'locked' THEN COALESCE(ra.if_not_returned, r.if_not_returned)   ELSE r.if_not_returned  END AS if_not_returned,
       COALESCE(ra.borrower_agreed, 0) AS borrower_agreed,
       COALESCE(ra.lender_agreed,   0) AS lender_agreed,
       CASE
@@ -829,7 +835,7 @@ function openRequestForm(req = null) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitForm('${req?.id ?? ""}')">
+      <button class="btn btn-primary" data-action="submit" data-id="${esc(req?.id ?? "")}">
         ${isEdit ? "Save Changes" : "Create Request"}
       </button>
     </div>
@@ -908,7 +914,7 @@ function openDetailModal(req) {
         <h3>${esc(req.item_name)}</h3>
         <div style="margin-top:5px">${statusHtml(req.status)}</div>
       </div>
-      ${canEdit ? `<button class="btn btn-ghost btn-sm" onclick="openEditForm('${req.id}')">Edit</button>` : ""}
+      ${canEdit ? `<button class="btn btn-ghost btn-sm" data-action="edit" data-id="${esc(req.id)}">Edit</button>` : ""}
     </div>
 
     ${req.item_description ? `<p class="detail-desc">${esc(req.item_description)}</p>` : ""}
@@ -941,7 +947,7 @@ function openDetailModal(req) {
     ${conditionLabels.length > 0 ? `
     <div class="detail-section">
       <div class="detail-label">Return condition</div>
-      <div class="condition-pills">${conditionLabels.map(l => `<span class="condition-pill">${l}</span>`).join("")}</div>
+      <div class="condition-pills">${conditionLabels.map(l => `<span class="condition-pill">${esc(l)}</span>`).join("")}</div>
     </div>` : ""}
 
     ${req.if_not_returned ? `
@@ -958,10 +964,10 @@ function openDetailModal(req) {
     ${req.locked_at ? `<div class="locked-notice">🔒 Locked on ${formatDate(req.locked_at.split("T")[0])}</div>` : ""}
 
     <div class="modal-actions">
-      ${canAgree && !myAgreed ? `<button class="btn btn-success" onclick="agreeRequest('${req.id}')">✓ I Agree</button>` : ""}
-      ${canAgree && myAgreed  ? `<button class="btn btn-ghost"   onclick="withdrawAgreement('${req.id}')">Withdraw Agreement</button>` : ""}
-      ${canReturn              ? `<button class="btn btn-primary" onclick="markReturned('${req.id}')">Mark Returned</button>` : ""}
-      ${canCancel              ? `<button class="btn btn-danger btn-sm" onclick="cancelRequest('${req.id}')">Cancel</button>` : ""}
+      ${canAgree && !myAgreed ? `<button class="btn btn-success" data-action="agree" data-id="${esc(req.id)}">✓ I Agree</button>` : ""}
+      ${canAgree && myAgreed  ? `<button class="btn btn-ghost"   data-action="withdraw" data-id="${esc(req.id)}">Withdraw Agreement</button>` : ""}
+      ${canReturn              ? `<button class="btn btn-primary" data-action="return" data-id="${esc(req.id)}">Mark Returned</button>` : ""}
+      ${canCancel              ? `<button class="btn btn-danger btn-sm" data-action="cancel" data-id="${esc(req.id)}">Cancel</button>` : ""}
       <button class="btn btn-ghost" onclick="closeModal()">Close</button>
     </div>
   `);
@@ -979,6 +985,24 @@ window.markReturned       = markReturned;
 window.cancelRequest      = cancelRequest;
 window.closeModal         = closeModal;
 
+// Delegated handler for id-bearing actions. Row ids are attacker-controllable via
+// raw /api/db and esc() does NOT escape single quotes, so an inline
+// onclick="fn('${id}')" would be a stored-XSS breakout vector — use data-* + this.
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-action]");
+  if (!el) return;
+  const id = el.dataset.id ?? "";
+  switch (el.dataset.action) {
+    case "detail":   window.openDetailModal(id); break;
+    case "edit":     window.openEditForm(id); break;
+    case "agree":    agreeRequest(id); break;
+    case "withdraw": withdrawAgreement(id); break;
+    case "return":   markReturned(id); break;
+    case "cancel":   cancelRequest(id); break;
+    case "submit":   window.submitForm(id); break;
+  }
+});
+
 // ─── Render ───────────────────────────────────────────────────────────────
 function renderRequestCard(req) {
   const isBorrower  = ME?.id === req.borrower_id;
@@ -990,7 +1014,7 @@ function renderRequestCard(req) {
   const needsAction = needsMyAction(req, ME?.id);
 
   return `
-    <div class="request-card ${needsAction ? "needs-action" : ""}" onclick="openDetailModal('${req.id}')">
+    <div class="request-card ${needsAction ? "needs-action" : ""}" data-action="detail" data-id="${esc(req.id)}">
       <div class="request-main">
         <div class="request-item">${esc(req.item_name)}</div>
         <div class="request-meta">

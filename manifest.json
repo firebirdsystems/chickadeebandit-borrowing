@@ -50,7 +50,8 @@
       "locked_at_column": "locked_at",
       "updated_at_column": "updated_at",
       "init_from_table": "requests",
-      "init_columns": ["borrower_id", "lender_id"]
+      "init_columns": ["borrower_id", "lender_id"],
+      "snapshot_columns": ["item_name", "item_description", "needed_date", "return_date", "return_condition", "if_not_returned"]
     }
   },
   "publish_acls": {
