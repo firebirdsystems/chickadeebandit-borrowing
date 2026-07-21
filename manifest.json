@@ -12,6 +12,7 @@
     "agreements",
     "items"
   ],
+  "contexts": ["household", "shared_space"],
   "data_access": {
     "reads": [
       "family.members"
