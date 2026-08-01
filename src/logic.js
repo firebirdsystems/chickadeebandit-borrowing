@@ -51,3 +51,13 @@ export function willLockOnAgree(req, meId) {
   const theirAgreed = isBorrower ? req.lender_agreed : req.borrower_agreed;
   return req.status === "pending" && theirAgreed;
 }
+
+/**
+ * Fields the in-app search matches against (see hub-sdk `searchMatch`).
+ * The item description and the return terms count as well as the
+ * item's name — "the drill I said I'd bring back Sunday" is in the
+ * terms, not the title.
+ */
+export function searchableFields(item) {
+  return [item.item_name, item.item_description, item.return_condition, item.if_not_returned];
+}

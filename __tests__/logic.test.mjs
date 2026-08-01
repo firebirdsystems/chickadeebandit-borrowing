@@ -3,7 +3,7 @@ import {
   CONDITION_OPTIONS, STATUS_INFO,
   conditionLabel, formatDate,
   filterRequests, pendingBadgeCount,
-  needsMyAction, willLockOnAgree,
+  needsMyAction, willLockOnAgree, searchableFields,
 } from "../src/logic.js";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -194,5 +194,16 @@ describe("willLockOnAgree", () => {
 
   it("returns false when status is not pending", () => {
     expect(willLockOnAgree(req({ status: "locked", lender_agreed: true }), "u1")).toBe(false);
+  });
+});
+
+describe("searchableFields", () => {
+  it("matches on the description and the return terms, not just the item name", () => {
+    const fields = searchableFields({
+      item_name: "Drill", item_description: "green Bosch, with the charger",
+      return_condition: "back by Sunday", if_not_returned: "replace it",
+    });
+    expect(fields).toContain("green Bosch, with the charger");
+    expect(fields).toContain("back by Sunday");
   });
 });
