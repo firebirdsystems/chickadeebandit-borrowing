@@ -55,6 +55,32 @@
       "snapshot_columns": ["item_name", "item_description", "needed_date", "return_date", "return_condition", "if_not_returned"]
     }
   },
+  "member_references": {
+    "activity": {
+      "column": "actor_id",
+      "on_removed": "keep"
+    },
+    "requests": [
+      {
+        "column": "borrower_id",
+        "on_removed": "keep"
+      },
+      {
+        "column": "lender_id",
+        "on_removed": "keep"
+      }
+    ],
+    "request_agreements": [
+      {
+        "column": "borrower_id",
+        "on_removed": "keep"
+      },
+      {
+        "column": "lender_id",
+        "on_removed": "keep"
+      }
+    ]
+  },
   "publish_acls": {
     "borrowing.agreed": { "require_role": "adult" },
     "borrowing.returned": { "require_role": "adult" }
