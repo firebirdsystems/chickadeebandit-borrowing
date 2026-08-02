@@ -25,6 +25,26 @@
   },
   "storage": "db",
   "db_encryption": "off",
+  "agenda": {
+    "kind": "reminder",
+    "label": "Due back",
+    "source": {
+      "kind": "sql",
+      "query": "SELECT id AS id, item_name AS title, return_date AS when_at, borrower_id AS member_id FROM app_borrowing__requests WHERE return_date = :today AND status NOT IN ('cancelled', 'returned') ORDER BY created_at LIMIT 10"
+    }
+  },
+  "glance": {
+    "source": {
+      "kind": "sql",
+      "query": "SELECT COUNT(*) AS n FROM app_borrowing__requests WHERE return_date <= :today AND status NOT IN ('cancelled', 'returned') LIMIT 1"
+    },
+    "display": {
+      "template": "badge",
+      "count": "n",
+      "label": "items due back",
+      "severity": "warn"
+    }
+  },
   "row_policies": {
     "requests": {
       "kind": "party_scoped",
