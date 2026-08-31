@@ -901,7 +901,7 @@ function openDetailModal(req) {
   `;
 
   openModal(`
-    <div class="detail-header">
+    <div class="detail-header" data-testid="request-detail" data-request-id="${esc(req.id)}">
       <div>
         <h3>${esc(req.item_name)}</h3>
         <div style="margin-top:5px">${statusHtml(req.status)}</div>
@@ -956,8 +956,8 @@ function openDetailModal(req) {
     ${req.locked_at ? `<div class="locked-notice">🔒 Locked on ${formatDate(req.locked_at.split("T")[0])}</div>` : ""}
 
     <div class="modal-actions">
-      ${canAgree && !myAgreed ? `<button class="btn btn-success" data-action="agree" data-id="${esc(req.id)}">✓ I Agree</button>` : ""}
-      ${canAgree && myAgreed  ? `<button class="btn btn-ghost"   data-action="withdraw" data-id="${esc(req.id)}">Withdraw Agreement</button>` : ""}
+      ${canAgree && !myAgreed ? `<button class="btn btn-success" data-testid="agree-btn" data-request-id="${esc(req.id)}" data-action="agree" data-id="${esc(req.id)}">✓ I Agree</button>` : ""}
+      ${canAgree && myAgreed  ? `<button class="btn btn-ghost"   data-testid="withdraw-btn" data-request-id="${esc(req.id)}" data-action="withdraw" data-id="${esc(req.id)}">Withdraw Agreement</button>` : ""}
       ${canReturn              ? `<button class="btn btn-primary" data-action="return" data-id="${esc(req.id)}">Mark Returned</button>` : ""}
       ${canCancel              ? `<button class="btn btn-danger btn-sm" data-action="cancel" data-id="${esc(req.id)}">Cancel</button>` : ""}
       <button class="btn btn-ghost" onclick="closeModal()">Close</button>
@@ -1006,7 +1006,7 @@ function renderRequestCard(req) {
   const needsAction = needsMyAction(req, ME?.id);
 
   return `
-    <div class="request-card ${needsAction ? "needs-action" : ""}" data-action="detail" data-id="${esc(req.id)}">
+    <div class="request-card ${needsAction ? "needs-action" : ""}" data-testid="request-card" data-request-id="${esc(req.id)}" data-action="detail" data-id="${esc(req.id)}">
       <div class="request-main">
         <div class="request-item">${esc(req.item_name)}</div>
         <div class="request-meta">
@@ -1069,10 +1069,10 @@ function render() {
     </header>
 
     <div class="tabs">
-      <button class="tab ${activeTab === "for-me" ? "active" : ""}" onclick="setTab('for-me')">
+      <button class="tab ${activeTab === "for-me" ? "active" : ""}" data-testid="app-tab" data-tab="for-me" onclick="setTab('for-me')">
         For Me ${forMeBadge > 0 ? `<span class="tab-badge">${forMeBadge}</span>` : ""}
       </button>
-      <button class="tab ${activeTab === "from-me" ? "active" : ""}" onclick="setTab('from-me')">
+      <button class="tab ${activeTab === "from-me" ? "active" : ""}" data-testid="app-tab" data-tab="from-me" onclick="setTab('from-me')">
         From Me ${fromMeBadge > 0 ? `<span class="tab-badge">${fromMeBadge}</span>` : ""}
       </button>
     </div>

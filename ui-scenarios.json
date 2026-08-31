@@ -1,0 +1,100 @@
+{
+  "scenarios": [
+    {
+      "name": "agreement state is read from the endpoint-only table, not the party-editable column",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, borrower_agreed, lender_agreed, created_at, updated_at) VALUES ('br-req', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', 1, 1, '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Pressure washer",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES ('br-req', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "as": "borrower",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]"
+        },
+        {
+          "action": "click",
+          "as": "borrower",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]"
+        },
+        {
+          "action": "expectVisible",
+          "as": "borrower",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-req\"]"
+        },
+        {
+          "action": "click",
+          "as": "borrower",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-req\"]"
+        },
+        {
+          "action": "expectVisible",
+          "as": "borrower",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-req\"]"
+        },
+        {
+          "action": "expectCount",
+          "as": "borrower",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-req\"]",
+          "count": 0
+        },
+        {
+          "action": "expectVisible",
+          "as": "borrower",
+          "selector": "[data-testid=\"withdraw-btn\"][data-request-id=\"br-req\"]"
+        },
+        {
+          "action": "open",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "as": "lender",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-req\"]"
+        },
+        {
+          "action": "click",
+          "as": "lender",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-req\"]"
+        },
+        {
+          "action": "expectVisible",
+          "as": "lender",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-req\"]"
+        },
+        {
+          "action": "expectCount",
+          "as": "lender",
+          "selector": "[data-testid=\"withdraw-btn\"][data-request-id=\"br-req\"]",
+          "count": 0
+        },
+        {
+          "action": "expectVisible",
+          "as": "lender",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-req\"]"
+        }
+      ]
+    }
+  ]
+}
