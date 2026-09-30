@@ -71,6 +71,72 @@
           "expect": { "status": 403, "errorIncludes": "endpoint" }
         }
       ]
+    },
+    {
+      "name": "a child cannot see or alter a borrowing request between two adults",
+      "members": { "kid": "child", "lender": "adult", "borrower": "adult" },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('r1', 'Ladder', ?, ?, '2026-02-01', '2026-02-08', 'pending', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')",
+          "params": ["{{borrower}}", "{{lender}}"]
+        },
+        {
+          "action": "db",
+          "as": "kid",
+          "sql": "SELECT id FROM app_borrowing__requests",
+          "expect": { "status": 200, "rowCount": 0 }
+        },
+        {
+          "action": "db",
+          "as": "kid",
+          "sql": "UPDATE app_borrowing__requests SET status = 'returned' WHERE id = 'r1'",
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "lender",
+          "sql": "SELECT status FROM app_borrowing__requests WHERE id = 'r1'",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "status": "pending" }] }
+        },
+        {
+          "action": "db",
+          "as": "kid",
+          "sql": "DELETE FROM app_borrowing__requests WHERE id = 'r1'",
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "lender",
+          "sql": "SELECT id FROM app_borrowing__requests WHERE id = 'r1'",
+          "expect": { "status": 200, "rowCount": 1 }
+        }
+      ]
+    },
+    {
+      "name": "a child's borrow request is stamped with the child as borrower even when it names someone else",
+      "members": { "kid": "child", "lender": "adult", "other": "adult" },
+      "steps": [
+        {
+          "action": "db",
+          "as": "kid",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('r1', 'Bike pump', ?, ?, '2026-02-01', '2026-02-08', 'pending', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')",
+          "params": ["{{other}}", "{{lender}}"],
+          "expect": { "status": 200 }
+        },
+        {
+          "action": "db",
+          "as": "lender",
+          "sql": "SELECT borrower_id FROM app_borrowing__requests WHERE id = 'r1'",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "borrower_id": "scn-kid" }] }
+        },
+        {
+          "action": "db",
+          "as": "other",
+          "sql": "SELECT id FROM app_borrowing__requests WHERE id = 'r1'",
+          "expect": { "status": 200, "rowCount": 0 }
+        }
+      ]
     }
   ]
 }
