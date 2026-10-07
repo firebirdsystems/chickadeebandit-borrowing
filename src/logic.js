@@ -14,7 +14,7 @@ export const CONDITION_OPTIONS = [
 
 export const STATUS_INFO = {
   pending:   { cls: "status-pending",   label: "Pending" },
-  locked:    { cls: "status-locked",    label: "🔒 Agreed" },
+  locked:    { cls: "status-locked",    label: "Agreed", glyph: "lock" },
   returned:  { cls: "status-returned",  label: "Returned" },
   cancelled: { cls: "status-cancelled", label: "Cancelled" },
 };

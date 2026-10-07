@@ -423,7 +423,7 @@
 </div>
 
 <script type="module">
-import { memberColor, initial, esc, hubConfirm, searchMatch } from "/hub-sdk.js";
+import { memberColor, initial, esc, hubConfirm, searchMatch, glyph } from "/hub-sdk.js";
 import {
   CONDITION_OPTIONS, STATUS_INFO,
   conditionLabel, formatDate,
@@ -541,8 +541,8 @@ function memberName(id) {
 function mc(id) { return memberColor(id, members); }
 
 function statusHtml(status) {
-  const { cls, label } = STATUS_INFO[status] ?? STATUS_INFO.pending;
-  return `<span class="status-badge ${cls}">${label}</span>`;
+  const { cls, label, glyph: mark } = STATUS_INFO[status] ?? STATUS_INFO.pending;
+  return `<span class="status-badge ${cls}">${mark ? `${glyph(mark)} ` : ""}${label}</span>`;
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────
@@ -790,7 +790,7 @@ function openRequestForm(req = null) {
 
   openModal(`
     <h3>${isEdit ? "Edit Request" : "New Borrow Request"}</h3>
-    ${isEdit ? `<div class="form-notice">⚠️ Editing will reset both agreements — both parties must re-agree after saving.</div>` : ""}
+    ${isEdit ? `<div class="form-notice">${glyph("warning")} Editing will reset both agreements — both parties must re-agree after saving.</div>` : ""}
     <div class="form-group">
       <label>Item to borrow</label>
       <input id="f-item" type="text" value="${esc(req?.item_name ?? "")}" placeholder="Blue dress, power drill, board game…" data-autofocus />
@@ -890,12 +890,12 @@ function openDetailModal(req) {
       <div class="agreement-person ${req.borrower_agreed ? "agreed" : ""}">
         <div class="avatar sm" style="background:${mc(req.borrower_id)}">${initial(borrower?.name ?? "?")}</div>
         <span>${esc(borrower?.name ?? "?")}</span>
-        <span class="agree-check">${req.borrower_agreed ? "✓ Agreed" : "Pending"}</span>
+        <span class="agree-check">${req.borrower_agreed ? `${glyph("tick")} Agreed` : "Pending"}</span>
       </div>
       <div class="agreement-person ${req.lender_agreed ? "agreed" : ""}">
         <div class="avatar sm" style="background:${mc(req.lender_id)}">${initial(lender?.name ?? "?")}</div>
         <span>${esc(lender?.name ?? "?")}</span>
-        <span class="agree-check">${req.lender_agreed ? "✓ Agreed" : "Pending"}</span>
+        <span class="agree-check">${req.lender_agreed ? `${glyph("tick")} Agreed` : "Pending"}</span>
       </div>
     </div>
   `;
@@ -953,10 +953,10 @@ function openDetailModal(req) {
       ${agreementHtml}
     </div>
 
-    ${req.locked_at ? `<div class="locked-notice">🔒 Locked on ${formatDate(req.locked_at.split("T")[0])}</div>` : ""}
+    ${req.locked_at ? `<div class="locked-notice">${glyph("lock")} Locked on ${formatDate(req.locked_at.split("T")[0])}</div>` : ""}
 
     <div class="modal-actions">
-      ${canAgree && !myAgreed ? `<button class="btn btn-success" data-testid="agree-btn" data-request-id="${esc(req.id)}" data-action="agree" data-id="${esc(req.id)}">✓ I Agree</button>` : ""}
+      ${canAgree && !myAgreed ? `<button class="btn btn-success" data-testid="agree-btn" data-request-id="${esc(req.id)}" data-action="agree" data-id="${esc(req.id)}">${glyph("tick")} I Agree</button>` : ""}
       ${canAgree && myAgreed  ? `<button class="btn btn-ghost"   data-testid="withdraw-btn" data-request-id="${esc(req.id)}" data-action="withdraw" data-id="${esc(req.id)}">Withdraw Agreement</button>` : ""}
       ${canReturn              ? `<button class="btn btn-primary" data-action="return" data-id="${esc(req.id)}">Mark Returned</button>` : ""}
       ${canCancel              ? `<button class="btn btn-danger btn-sm" data-action="cancel" data-id="${esc(req.id)}">Cancel</button>` : ""}
@@ -1060,7 +1060,7 @@ function render() {
   document.getElementById("root").innerHTML = `
     <header>
       <div>
-        <h1>🤝 Borrowing</h1>
+        <h1>${glyph("handshake")} Borrowing</h1>
         <div class="sub">Track borrowed items &amp; agreements</div>
       </div>
       <button class="btn btn-ghost"
