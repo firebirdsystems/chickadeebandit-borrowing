@@ -1,0 +1,2150 @@
+{
+  "seed": [
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 days','+0 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 days','+30 minutes'))",
+      "params": [
+        "perf-bor-01",
+        "Pressure washer",
+        "The electric one, with the long hose.",
+        "{{me}}",
+        "{{partner}}",
+        "{{date:2}}",
+        "{{date:7}}",
+        "[\"as-is\"]",
+        "Pay the replacement cost.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 days','+20 minutes'))",
+      "params": [
+        "perf-bor-01",
+        "{{me}}",
+        "{{partner}}",
+        1,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 days','+0 minutes'), ?, ?)",
+      "params": [
+        "perf-act-001",
+        "perf-bor-01",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Pressure washer\"",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-1 days','+5 minutes'), ?, ?)",
+      "params": [
+        "perf-act-002",
+        "perf-bor-01",
+        "{{me}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','+1 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','+31 minutes'))",
+      "params": [
+        "perf-bor-02",
+        "Black blazer",
+        "For the school concert.",
+        "{{partner}}",
+        "{{me}}",
+        "{{date:3}}",
+        "{{date:9}}",
+        "[\"washed\"]",
+        "Bake a cake.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','+21 minutes'))",
+      "params": [
+        "perf-bor-02",
+        "{{partner}}",
+        "{{me}}",
+        1,
+        1,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','+1 minutes'), ?, ?)",
+      "params": [
+        "perf-act-003",
+        "perf-bor-02",
+        "{{partner}}",
+        "created",
+        "Requested to borrow \"Black blazer\"",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-2 days','+6 minutes'), ?, ?)",
+      "params": [
+        "perf-act-004",
+        "perf-bor-02",
+        "{{partner}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','+2 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','+32 minutes'))",
+      "params": [
+        "perf-bor-03",
+        "Camping stove",
+        "Two-burner, plus the gas adapter.",
+        "{{child}}",
+        "{{me}}",
+        "{{date:4}}",
+        "{{date:11}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Do the lender's chores for a week.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','+22 minutes'))",
+      "params": [
+        "perf-bor-03",
+        "{{child}}",
+        "{{me}}",
+        1,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','+2 minutes'), ?, ?)",
+      "params": [
+        "perf-act-005",
+        "perf-bor-03",
+        "{{child}}",
+        "created",
+        "Requested to borrow \"Camping stove\"",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-3 days','+7 minutes'), ?, ?)",
+      "params": [
+        "perf-act-006",
+        "perf-bor-03",
+        "{{child}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-4 days','+3 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-4 days','+33 minutes'))",
+      "params": [
+        "perf-bor-04",
+        "Cordless drill",
+        "With both batteries.",
+        "{{me}}",
+        "{{adult2}}",
+        "{{date:5}}",
+        "{{date:13}}",
+        "[\"disinfected\"]",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-4 days','+23 minutes'))",
+      "params": [
+        "perf-bor-04",
+        "{{me}}",
+        "{{adult2}}",
+        0,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-4 days','+3 minutes'), ?, ?)",
+      "params": [
+        "perf-act-007",
+        "perf-bor-04",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Cordless drill\"",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+4 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+34 minutes'))",
+      "params": [
+        "perf-bor-05",
+        "Stand mixer",
+        "And the dough hook.",
+        "{{adult2}}",
+        "{{me}}",
+        "{{date:6}}",
+        "{{date:11}}",
+        "[\"original-pkg\"]",
+        "Pay the replacement cost.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+24 minutes'))",
+      "params": [
+        "perf-bor-05",
+        "{{adult2}}",
+        "{{me}}",
+        1,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+4 minutes'), ?, ?)",
+      "params": [
+        "perf-act-008",
+        "perf-bor-05",
+        "{{adult2}}",
+        "created",
+        "Requested to borrow \"Stand mixer\"",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+9 minutes'), ?, ?)",
+      "params": [
+        "perf-act-009",
+        "perf-bor-05",
+        "{{adult2}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+5 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+35 minutes'))",
+      "params": [
+        "perf-bor-06",
+        "Graphing calculator",
+        "Needed for the algebra test.",
+        "{{child2}}",
+        "{{me}}",
+        "{{date:7}}",
+        "{{date:13}}",
+        "[]",
+        "Bake a cake.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+25 minutes'))",
+      "params": [
+        "perf-bor-06",
+        "{{child2}}",
+        "{{me}}",
+        1,
+        1,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+5 minutes'), ?, ?)",
+      "params": [
+        "perf-act-010",
+        "perf-bor-06",
+        "{{child2}}",
+        "created",
+        "Requested to borrow \"Graphing calculator\"",
+        "{{child2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+10 minutes'), ?, ?)",
+      "params": [
+        "perf-act-011",
+        "perf-bor-06",
+        "{{child2}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{child2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+6 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+36 minutes'))",
+      "params": [
+        "perf-bor-07",
+        "Roof rack",
+        "Crossbars and the key.",
+        "{{me}}",
+        "{{child}}",
+        "{{date:8}}",
+        "{{date:15}}",
+        "[\"as-is\"]",
+        "Do the lender's chores for a week.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+26 minutes'))",
+      "params": [
+        "perf-bor-07",
+        "{{me}}",
+        "{{child}}",
+        1,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+6 minutes'), ?, ?)",
+      "params": [
+        "perf-act-012",
+        "perf-bor-07",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Roof rack\"",
+        "{{me}}",
+        "{{child}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+11 minutes'), ?, ?)",
+      "params": [
+        "perf-act-013",
+        "perf-bor-07",
+        "{{me}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{me}}",
+        "{{child}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','+7 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','+37 minutes'))",
+      "params": [
+        "perf-bor-08",
+        "Sleeping bag",
+        "The warm one.",
+        "{{partner}}",
+        "{{adult2}}",
+        "{{date:9}}",
+        "{{date:17}}",
+        "[\"washed\"]",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','+27 minutes'))",
+      "params": [
+        "perf-bor-08",
+        "{{partner}}",
+        "{{adult2}}",
+        0,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','+7 minutes'), ?, ?)",
+      "params": [
+        "perf-act-014",
+        "perf-bor-08",
+        "{{partner}}",
+        "created",
+        "Requested to borrow \"Sleeping bag\"",
+        "{{partner}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+8 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+38 minutes'))",
+      "params": [
+        "perf-bor-09",
+        "Ladder",
+        "The 8-foot stepladder.",
+        "{{child}}",
+        "{{partner}}",
+        "{{date:-4}}",
+        "{{date:-2}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Pay the replacement cost.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+8 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+28 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-09",
+        "{{child}}",
+        "{{partner}}",
+        1,
+        1,
+        "locked",
+        "Ladder",
+        "The 8-foot stepladder.",
+        "{{date:-4}}",
+        "{{date:-2}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Pay the replacement cost."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+8 minutes'), ?, ?)",
+      "params": [
+        "perf-act-015",
+        "perf-bor-09",
+        "{{child}}",
+        "created",
+        "Requested to borrow \"Ladder\"",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-6 days','+13 minutes'), ?, ?)",
+      "params": [
+        "perf-act-016",
+        "perf-bor-09",
+        "{{child}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+8 minutes'), ?, ?)",
+      "params": [
+        "perf-act-017",
+        "perf-bor-09",
+        "{{partner}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-5 days','+9 minutes'), ?, ?)",
+      "params": [
+        "perf-act-018",
+        "perf-bor-09",
+        "{{partner}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','+9 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+39 minutes'))",
+      "params": [
+        "perf-bor-10",
+        "Bike pump",
+        "{{me}}",
+        "{{partner}}",
+        "{{date:-6}}",
+        "{{date:0}}",
+        "[\"disinfected\"]",
+        "Bake a cake.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+9 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+29 minutes'), ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-10",
+        "{{me}}",
+        "{{partner}}",
+        1,
+        1,
+        "locked",
+        "Bike pump",
+        "{{date:-6}}",
+        "{{date:0}}",
+        "[\"disinfected\"]",
+        "Bake a cake."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','+9 minutes'), ?, ?)",
+      "params": [
+        "perf-act-019",
+        "perf-bor-10",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Bike pump\"",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-8 days','+14 minutes'), ?, ?)",
+      "params": [
+        "perf-act-020",
+        "perf-bor-10",
+        "{{me}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+9 minutes'), ?, ?)",
+      "params": [
+        "perf-act-021",
+        "perf-bor-10",
+        "{{partner}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-7 days','+10 minutes'), ?, ?)",
+      "params": [
+        "perf-act-022",
+        "perf-bor-10",
+        "{{partner}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-10 days','+10 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-9 days','+40 minutes'))",
+      "params": [
+        "perf-bor-11",
+        "Slow cooker",
+        "Six-quart.",
+        "{{partner}}",
+        "{{me}}",
+        "{{date:-8}}",
+        "{{date:0}}",
+        "[\"original-pkg\"]",
+        "Do the lender's chores for a week.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-9 days','+10 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-9 days','+30 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-11",
+        "{{partner}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Slow cooker",
+        "Six-quart.",
+        "{{date:-8}}",
+        "{{date:0}}",
+        "[\"original-pkg\"]",
+        "Do the lender's chores for a week."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-10 days','+10 minutes'), ?, ?)",
+      "params": [
+        "perf-act-023",
+        "perf-bor-11",
+        "{{partner}}",
+        "created",
+        "Requested to borrow \"Slow cooker\"",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-10 days','+15 minutes'), ?, ?)",
+      "params": [
+        "perf-act-024",
+        "perf-bor-11",
+        "{{partner}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-9 days','+10 minutes'), ?, ?)",
+      "params": [
+        "perf-act-025",
+        "perf-bor-11",
+        "{{me}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-9 days','+11 minutes'), ?, ?)",
+      "params": [
+        "perf-act-026",
+        "perf-bor-11",
+        "{{me}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-12 days','+11 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-11 days','+41 minutes'))",
+      "params": [
+        "perf-bor-12",
+        "Tennis racket",
+        "For Saturday lessons.",
+        "{{child}}",
+        "{{me}}",
+        "{{date:-10}}",
+        "{{date:1}}",
+        "[]",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-11 days','+11 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-11 days','+31 minutes'), ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-12",
+        "{{child}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Tennis racket",
+        "For Saturday lessons.",
+        "{{date:-10}}",
+        "{{date:1}}",
+        "[]"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-12 days','+11 minutes'), ?, ?)",
+      "params": [
+        "perf-act-027",
+        "perf-bor-12",
+        "{{child}}",
+        "created",
+        "Requested to borrow \"Tennis racket\"",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-12 days','+16 minutes'), ?, ?)",
+      "params": [
+        "perf-act-028",
+        "perf-bor-12",
+        "{{child}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-11 days','+11 minutes'), ?, ?)",
+      "params": [
+        "perf-act-029",
+        "perf-bor-12",
+        "{{me}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-11 days','+12 minutes'), ?, ?)",
+      "params": [
+        "perf-act-030",
+        "perf-bor-12",
+        "{{me}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-14 days','+12 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-13 days','+42 minutes'))",
+      "params": [
+        "perf-bor-13",
+        "Suitcase",
+        "Large hard-shell.",
+        "{{me}}",
+        "{{adult2}}",
+        "{{date:-12}}",
+        "{{date:3}}",
+        "[\"as-is\"]",
+        "Pay the replacement cost.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-13 days','+12 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-13 days','+32 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-13",
+        "{{me}}",
+        "{{adult2}}",
+        1,
+        1,
+        "locked",
+        "Suitcase",
+        "Large hard-shell.",
+        "{{date:-12}}",
+        "{{date:3}}",
+        "[\"as-is\"]",
+        "Pay the replacement cost."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-14 days','+12 minutes'), ?, ?)",
+      "params": [
+        "perf-act-031",
+        "perf-bor-13",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Suitcase\"",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-14 days','+17 minutes'), ?, ?)",
+      "params": [
+        "perf-act-032",
+        "perf-bor-13",
+        "{{me}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-13 days','+12 minutes'), ?, ?)",
+      "params": [
+        "perf-act-033",
+        "perf-bor-13",
+        "{{adult2}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-13 days','+13 minutes'), ?, ?)",
+      "params": [
+        "perf-act-034",
+        "perf-bor-13",
+        "{{adult2}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-16 days','+13 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-15 days','+43 minutes'))",
+      "params": [
+        "perf-bor-14",
+        "Board game: Catan",
+        "All the pieces, please.",
+        "{{adult2}}",
+        "{{me}}",
+        "{{date:-14}}",
+        "{{date:4}}",
+        "[\"washed\"]",
+        "Bake a cake.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-15 days','+13 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-15 days','+33 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-14",
+        "{{adult2}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Board game: Catan",
+        "All the pieces, please.",
+        "{{date:-14}}",
+        "{{date:4}}",
+        "[\"washed\"]",
+        "Bake a cake."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-16 days','+13 minutes'), ?, ?)",
+      "params": [
+        "perf-act-035",
+        "perf-bor-14",
+        "{{adult2}}",
+        "created",
+        "Requested to borrow \"Board game: Catan\"",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-16 days','+18 minutes'), ?, ?)",
+      "params": [
+        "perf-act-036",
+        "perf-bor-14",
+        "{{adult2}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-15 days','+13 minutes'), ?, ?)",
+      "params": [
+        "perf-act-037",
+        "perf-bor-14",
+        "{{me}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-15 days','+14 minutes'), ?, ?)",
+      "params": [
+        "perf-act-038",
+        "perf-bor-14",
+        "{{me}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-18 days','+14 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-17 days','+44 minutes'))",
+      "params": [
+        "perf-bor-15",
+        "Pressure washer",
+        "The electric one, with the long hose.",
+        "{{child2}}",
+        "{{me}}",
+        "{{date:-16}}",
+        "{{date:6}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Do the lender's chores for a week.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-17 days','+14 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-17 days','+34 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-15",
+        "{{child2}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Pressure washer",
+        "The electric one, with the long hose.",
+        "{{date:-16}}",
+        "{{date:6}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Do the lender's chores for a week."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-18 days','+14 minutes'), ?, ?)",
+      "params": [
+        "perf-act-039",
+        "perf-bor-15",
+        "{{child2}}",
+        "created",
+        "Requested to borrow \"Pressure washer\"",
+        "{{child2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-18 days','+19 minutes'), ?, ?)",
+      "params": [
+        "perf-act-040",
+        "perf-bor-15",
+        "{{child2}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{child2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-17 days','+14 minutes'), ?, ?)",
+      "params": [
+        "perf-act-041",
+        "perf-bor-15",
+        "{{me}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{child2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-17 days','+15 minutes'), ?, ?)",
+      "params": [
+        "perf-act-042",
+        "perf-bor-15",
+        "{{me}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{child2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-20 days','+15 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-19 days','+45 minutes'))",
+      "params": [
+        "perf-bor-16",
+        "Black blazer",
+        "For the school concert.",
+        "{{me}}",
+        "{{child}}",
+        "{{date:-18}}",
+        "{{date:8}}",
+        "[\"disinfected\"]",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-19 days','+15 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-19 days','+35 minutes'), ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-16",
+        "{{me}}",
+        "{{child}}",
+        1,
+        1,
+        "locked",
+        "Black blazer",
+        "For the school concert.",
+        "{{date:-18}}",
+        "{{date:8}}",
+        "[\"disinfected\"]"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-20 days','+15 minutes'), ?, ?)",
+      "params": [
+        "perf-act-043",
+        "perf-bor-16",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Black blazer\"",
+        "{{me}}",
+        "{{child}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-20 days','+20 minutes'), ?, ?)",
+      "params": [
+        "perf-act-044",
+        "perf-bor-16",
+        "{{me}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{me}}",
+        "{{child}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-19 days','+15 minutes'), ?, ?)",
+      "params": [
+        "perf-act-045",
+        "perf-bor-16",
+        "{{child}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{me}}",
+        "{{child}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-19 days','+16 minutes'), ?, ?)",
+      "params": [
+        "perf-act-046",
+        "perf-bor-16",
+        "{{child}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{me}}",
+        "{{child}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-22 days','+16 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-21 days','+46 minutes'))",
+      "params": [
+        "perf-bor-17",
+        "Camping stove",
+        "Two-burner, plus the gas adapter.",
+        "{{partner}}",
+        "{{adult2}}",
+        "{{date:-20}}",
+        "{{date:10}}",
+        "[\"original-pkg\"]",
+        "Pay the replacement cost.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-21 days','+16 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-21 days','+36 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-17",
+        "{{partner}}",
+        "{{adult2}}",
+        1,
+        1,
+        "locked",
+        "Camping stove",
+        "Two-burner, plus the gas adapter.",
+        "{{date:-20}}",
+        "{{date:10}}",
+        "[\"original-pkg\"]",
+        "Pay the replacement cost."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-22 days','+16 minutes'), ?, ?)",
+      "params": [
+        "perf-act-047",
+        "perf-bor-17",
+        "{{partner}}",
+        "created",
+        "Requested to borrow \"Camping stove\"",
+        "{{partner}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-22 days','+21 minutes'), ?, ?)",
+      "params": [
+        "perf-act-048",
+        "perf-bor-17",
+        "{{partner}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{partner}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-21 days','+16 minutes'), ?, ?)",
+      "params": [
+        "perf-act-049",
+        "perf-bor-17",
+        "{{adult2}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{partner}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-21 days','+17 minutes'), ?, ?)",
+      "params": [
+        "perf-act-050",
+        "perf-bor-17",
+        "{{adult2}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{partner}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-24 days','+17 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-23 days','+47 minutes'))",
+      "params": [
+        "perf-bor-18",
+        "Cordless drill",
+        "With both batteries.",
+        "{{child}}",
+        "{{partner}}",
+        "{{date:-22}}",
+        "{{date:14}}",
+        "[]",
+        "Bake a cake.",
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-23 days','+17 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-23 days','+37 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-18",
+        "{{child}}",
+        "{{partner}}",
+        1,
+        1,
+        "locked",
+        "Cordless drill",
+        "With both batteries.",
+        "{{date:-22}}",
+        "{{date:14}}",
+        "[]",
+        "Bake a cake."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-24 days','+17 minutes'), ?, ?)",
+      "params": [
+        "perf-act-051",
+        "perf-bor-18",
+        "{{child}}",
+        "created",
+        "Requested to borrow \"Cordless drill\"",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-24 days','+22 minutes'), ?, ?)",
+      "params": [
+        "perf-act-052",
+        "perf-bor-18",
+        "{{child}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-23 days','+17 minutes'), ?, ?)",
+      "params": [
+        "perf-act-053",
+        "perf-bor-18",
+        "{{partner}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-23 days','+18 minutes'), ?, ?)",
+      "params": [
+        "perf-act-054",
+        "perf-bor-18",
+        "{{partner}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{child}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-30 days','+18 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-22 days','+48 minutes'))",
+      "params": [
+        "perf-bor-19",
+        "Stand mixer",
+        "And the dough hook.",
+        "{{me}}",
+        "{{partner}}",
+        "{{date:-28}}",
+        "{{date:-22}}",
+        "[\"as-is\"]",
+        "Do the lender's chores for a week.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-29 days','+18 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-29 days','+38 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-19",
+        "{{me}}",
+        "{{partner}}",
+        1,
+        1,
+        "locked",
+        "Stand mixer",
+        "And the dough hook.",
+        "{{date:-28}}",
+        "{{date:-22}}",
+        "[\"as-is\"]",
+        "Do the lender's chores for a week."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-30 days','+18 minutes'), ?, ?)",
+      "params": [
+        "perf-act-055",
+        "perf-bor-19",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Stand mixer\"",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-30 days','+23 minutes'), ?, ?)",
+      "params": [
+        "perf-act-056",
+        "perf-bor-19",
+        "{{me}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-29 days','+18 minutes'), ?, ?)",
+      "params": [
+        "perf-act-057",
+        "perf-bor-19",
+        "{{partner}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-29 days','+19 minutes'), ?, ?)",
+      "params": [
+        "perf-act-058",
+        "perf-bor-19",
+        "{{partner}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-22 days','+48 minutes'), ?, ?)",
+      "params": [
+        "perf-act-059",
+        "perf-bor-19",
+        "{{partner}}",
+        "returned",
+        "Marked the item as returned",
+        "{{me}}",
+        "{{partner}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-35 days','+19 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-27 days','+49 minutes'))",
+      "params": [
+        "perf-bor-20",
+        "Graphing calculator",
+        "Needed for the algebra test.",
+        "{{partner}}",
+        "{{me}}",
+        "{{date:-33}}",
+        "{{date:-27}}",
+        "[\"washed\"]",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-34 days','+19 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-34 days','+39 minutes'), ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-20",
+        "{{partner}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Graphing calculator",
+        "Needed for the algebra test.",
+        "{{date:-33}}",
+        "{{date:-27}}",
+        "[\"washed\"]"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-35 days','+19 minutes'), ?, ?)",
+      "params": [
+        "perf-act-060",
+        "perf-bor-20",
+        "{{partner}}",
+        "created",
+        "Requested to borrow \"Graphing calculator\"",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-35 days','+24 minutes'), ?, ?)",
+      "params": [
+        "perf-act-061",
+        "perf-bor-20",
+        "{{partner}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-34 days','+19 minutes'), ?, ?)",
+      "params": [
+        "perf-act-062",
+        "perf-bor-20",
+        "{{me}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-34 days','+20 minutes'), ?, ?)",
+      "params": [
+        "perf-act-063",
+        "perf-bor-20",
+        "{{me}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-27 days','+49 minutes'), ?, ?)",
+      "params": [
+        "perf-act-064",
+        "perf-bor-20",
+        "{{partner}}",
+        "returned",
+        "Marked the item as returned",
+        "{{partner}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-40 days','+20 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-32 days','+50 minutes'))",
+      "params": [
+        "perf-bor-21",
+        "Roof rack",
+        "Crossbars and the key.",
+        "{{child}}",
+        "{{me}}",
+        "{{date:-38}}",
+        "{{date:-32}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Pay the replacement cost.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-39 days','+20 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-39 days','+40 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-21",
+        "{{child}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Roof rack",
+        "Crossbars and the key.",
+        "{{date:-38}}",
+        "{{date:-32}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Pay the replacement cost."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-40 days','+20 minutes'), ?, ?)",
+      "params": [
+        "perf-act-065",
+        "perf-bor-21",
+        "{{child}}",
+        "created",
+        "Requested to borrow \"Roof rack\"",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-40 days','+25 minutes'), ?, ?)",
+      "params": [
+        "perf-act-066",
+        "perf-bor-21",
+        "{{child}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-39 days','+20 minutes'), ?, ?)",
+      "params": [
+        "perf-act-067",
+        "perf-bor-21",
+        "{{me}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-39 days','+21 minutes'), ?, ?)",
+      "params": [
+        "perf-act-068",
+        "perf-bor-21",
+        "{{me}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-32 days','+50 minutes'), ?, ?)",
+      "params": [
+        "perf-act-069",
+        "perf-bor-21",
+        "{{me}}",
+        "returned",
+        "Marked the item as returned",
+        "{{child}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-45 days','+21 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-37 days','+51 minutes'))",
+      "params": [
+        "perf-bor-22",
+        "Sleeping bag",
+        "The warm one.",
+        "{{me}}",
+        "{{adult2}}",
+        "{{date:-43}}",
+        "{{date:-37}}",
+        "[\"disinfected\"]",
+        "Bake a cake.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-44 days','+21 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-44 days','+41 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-22",
+        "{{me}}",
+        "{{adult2}}",
+        1,
+        1,
+        "locked",
+        "Sleeping bag",
+        "The warm one.",
+        "{{date:-43}}",
+        "{{date:-37}}",
+        "[\"disinfected\"]",
+        "Bake a cake."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-45 days','+21 minutes'), ?, ?)",
+      "params": [
+        "perf-act-070",
+        "perf-bor-22",
+        "{{me}}",
+        "created",
+        "Requested to borrow \"Sleeping bag\"",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-45 days','+26 minutes'), ?, ?)",
+      "params": [
+        "perf-act-071",
+        "perf-bor-22",
+        "{{me}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-44 days','+21 minutes'), ?, ?)",
+      "params": [
+        "perf-act-072",
+        "perf-bor-22",
+        "{{adult2}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-44 days','+22 minutes'), ?, ?)",
+      "params": [
+        "perf-act-073",
+        "perf-bor-22",
+        "{{adult2}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-37 days','+51 minutes'), ?, ?)",
+      "params": [
+        "perf-act-074",
+        "perf-bor-22",
+        "{{me}}",
+        "returned",
+        "Marked the item as returned",
+        "{{me}}",
+        "{{adult2}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days','+22 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-42 days','+52 minutes'))",
+      "params": [
+        "perf-bor-23",
+        "Ladder",
+        "The 8-foot stepladder.",
+        "{{adult2}}",
+        "{{me}}",
+        "{{date:-48}}",
+        "{{date:-42}}",
+        "[\"original-pkg\"]",
+        "Do the lender's chores for a week.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-49 days','+22 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-49 days','+42 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-23",
+        "{{adult2}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Ladder",
+        "The 8-foot stepladder.",
+        "{{date:-48}}",
+        "{{date:-42}}",
+        "[\"original-pkg\"]",
+        "Do the lender's chores for a week."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days','+22 minutes'), ?, ?)",
+      "params": [
+        "perf-act-075",
+        "perf-bor-23",
+        "{{adult2}}",
+        "created",
+        "Requested to borrow \"Ladder\"",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-50 days','+27 minutes'), ?, ?)",
+      "params": [
+        "perf-act-076",
+        "perf-bor-23",
+        "{{adult2}}",
+        "agreed",
+        "Borrower agreed to the terms",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-49 days','+22 minutes'), ?, ?)",
+      "params": [
+        "perf-act-077",
+        "perf-bor-23",
+        "{{me}}",
+        "agreed",
+        "Lender agreed to the terms",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-49 days','+23 minutes'), ?, ?)",
+      "params": [
+        "perf-act-078",
+        "perf-bor-23",
+        "{{me}}",
+        "locked",
+        "Both parties agreed — request is now locked",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-42 days','+52 minutes'), ?, ?)",
+      "params": [
+        "perf-act-079",
+        "perf-bor-23",
+        "{{me}}",
+        "returned",
+        "Marked the item as returned",
+        "{{adult2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-55 days','+23 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-47 days','+53 minutes'))",
+      "params": [
+        "perf-bor-24",
+        "Bike pump",
+        "{{child2}}",
+        "{{me}}",
+        "{{date:-53}}",
+        "{{date:-47}}",
+        "[]",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, needed_date, return_date, return_condition) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-54 days','+23 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-54 days','+43 minutes'), ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-24",
+        "{{child2}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Bike pump",
+        "{{date:-53}}",
+        "{{date:-47}}",
+        "[]"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__activity (id, request_id, actor_id, action, detail, created_at, borrower_id, lender_id) VALUES (?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-55 days','+23 minutes'), ?, ?)",
+      "params": [
+        "perf-act-080",
+        "perf-bor-24",
+        "{{child2}}",
+        "created",
+        "Requested to borrow \"Bike pump\"",
+        "{{child2}}",
+        "{{me}}"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-60 days','+24 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-52 days','+54 minutes'))",
+      "params": [
+        "perf-bor-25",
+        "Slow cooker",
+        "Six-quart.",
+        "{{me}}",
+        "{{child}}",
+        "{{date:-58}}",
+        "{{date:-52}}",
+        "[\"as-is\"]",
+        "Pay the replacement cost.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-59 days','+24 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-59 days','+44 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-25",
+        "{{me}}",
+        "{{child}}",
+        1,
+        1,
+        "locked",
+        "Slow cooker",
+        "Six-quart.",
+        "{{date:-58}}",
+        "{{date:-52}}",
+        "[\"as-is\"]",
+        "Pay the replacement cost."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-65 days','+25 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-57 days','+55 minutes'))",
+      "params": [
+        "perf-bor-26",
+        "Tennis racket",
+        "For Saturday lessons.",
+        "{{partner}}",
+        "{{adult2}}",
+        "{{date:-63}}",
+        "{{date:-57}}",
+        "[\"washed\"]",
+        "Bake a cake.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-64 days','+25 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-64 days','+45 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-26",
+        "{{partner}}",
+        "{{adult2}}",
+        1,
+        1,
+        "locked",
+        "Tennis racket",
+        "For Saturday lessons.",
+        "{{date:-63}}",
+        "{{date:-57}}",
+        "[\"washed\"]",
+        "Bake a cake."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-70 days','+26 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-62 days','+56 minutes'))",
+      "params": [
+        "perf-bor-27",
+        "Suitcase",
+        "Large hard-shell.",
+        "{{child}}",
+        "{{partner}}",
+        "{{date:-68}}",
+        "{{date:-62}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Do the lender's chores for a week.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-69 days','+26 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-69 days','+46 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-27",
+        "{{child}}",
+        "{{partner}}",
+        1,
+        1,
+        "locked",
+        "Suitcase",
+        "Large hard-shell.",
+        "{{date:-68}}",
+        "{{date:-62}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Do the lender's chores for a week."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-75 days','+27 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-67 days','+57 minutes'))",
+      "params": [
+        "perf-bor-28",
+        "Board game: Catan",
+        "All the pieces, please.",
+        "{{me}}",
+        "{{partner}}",
+        "{{date:-73}}",
+        "{{date:-67}}",
+        "[\"disinfected\"]",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-74 days','+27 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-74 days','+47 minutes'), ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-28",
+        "{{me}}",
+        "{{partner}}",
+        1,
+        1,
+        "locked",
+        "Board game: Catan",
+        "All the pieces, please.",
+        "{{date:-73}}",
+        "{{date:-67}}",
+        "[\"disinfected\"]"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-80 days','+28 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-72 days','+58 minutes'))",
+      "params": [
+        "perf-bor-29",
+        "Pressure washer",
+        "The electric one, with the long hose.",
+        "{{partner}}",
+        "{{me}}",
+        "{{date:-78}}",
+        "{{date:-72}}",
+        "[\"original-pkg\"]",
+        "Pay the replacement cost.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-79 days','+28 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-79 days','+48 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-29",
+        "{{partner}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Pressure washer",
+        "The electric one, with the long hose.",
+        "{{date:-78}}",
+        "{{date:-72}}",
+        "[\"original-pkg\"]",
+        "Pay the replacement cost."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-85 days','+29 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-77 days','+59 minutes'))",
+      "params": [
+        "perf-bor-30",
+        "Black blazer",
+        "For the school concert.",
+        "{{child}}",
+        "{{me}}",
+        "{{date:-83}}",
+        "{{date:-77}}",
+        "[]",
+        "Bake a cake.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-84 days','+29 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-84 days','+49 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-30",
+        "{{child}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Black blazer",
+        "For the school concert.",
+        "{{date:-83}}",
+        "{{date:-77}}",
+        "[]",
+        "Bake a cake."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-90 days','+30 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-82 days','+60 minutes'))",
+      "params": [
+        "perf-bor-31",
+        "Camping stove",
+        "Two-burner, plus the gas adapter.",
+        "{{me}}",
+        "{{adult2}}",
+        "{{date:-88}}",
+        "{{date:-82}}",
+        "[\"as-is\"]",
+        "Do the lender's chores for a week.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-89 days','+30 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-89 days','+50 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-31",
+        "{{me}}",
+        "{{adult2}}",
+        1,
+        1,
+        "locked",
+        "Camping stove",
+        "Two-burner, plus the gas adapter.",
+        "{{date:-88}}",
+        "{{date:-82}}",
+        "[\"as-is\"]",
+        "Do the lender's chores for a week."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-95 days','+31 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-87 days','+61 minutes'))",
+      "params": [
+        "perf-bor-32",
+        "Cordless drill",
+        "With both batteries.",
+        "{{adult2}}",
+        "{{me}}",
+        "{{date:-93}}",
+        "{{date:-87}}",
+        "[\"washed\"]",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-94 days','+31 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-94 days','+51 minutes'), ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-32",
+        "{{adult2}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Cordless drill",
+        "With both batteries.",
+        "{{date:-93}}",
+        "{{date:-87}}",
+        "[\"washed\"]"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-100 days','+32 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-92 days','+62 minutes'))",
+      "params": [
+        "perf-bor-33",
+        "Stand mixer",
+        "And the dough hook.",
+        "{{child2}}",
+        "{{me}}",
+        "{{date:-98}}",
+        "{{date:-92}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Pay the replacement cost.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-99 days','+32 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-99 days','+52 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-33",
+        "{{child2}}",
+        "{{me}}",
+        1,
+        1,
+        "locked",
+        "Stand mixer",
+        "And the dough hook.",
+        "{{date:-98}}",
+        "{{date:-92}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Pay the replacement cost."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-105 days','+33 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-97 days','+63 minutes'))",
+      "params": [
+        "perf-bor-34",
+        "Graphing calculator",
+        "Needed for the algebra test.",
+        "{{me}}",
+        "{{child}}",
+        "{{date:-103}}",
+        "{{date:-97}}",
+        "[\"disinfected\"]",
+        "Bake a cake.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-104 days','+33 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-104 days','+53 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-34",
+        "{{me}}",
+        "{{child}}",
+        1,
+        1,
+        "locked",
+        "Graphing calculator",
+        "Needed for the algebra test.",
+        "{{date:-103}}",
+        "{{date:-97}}",
+        "[\"disinfected\"]",
+        "Bake a cake."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-110 days','+34 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-102 days','+64 minutes'))",
+      "params": [
+        "perf-bor-35",
+        "Roof rack",
+        "Crossbars and the key.",
+        "{{partner}}",
+        "{{adult2}}",
+        "{{date:-108}}",
+        "{{date:-102}}",
+        "[\"original-pkg\"]",
+        "Do the lender's chores for a week.",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-109 days','+34 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-109 days','+54 minutes'), ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-35",
+        "{{partner}}",
+        "{{adult2}}",
+        1,
+        1,
+        "locked",
+        "Roof rack",
+        "Crossbars and the key.",
+        "{{date:-108}}",
+        "{{date:-102}}",
+        "[\"original-pkg\"]",
+        "Do the lender's chores for a week."
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-115 days','+35 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-107 days','+65 minutes'))",
+      "params": [
+        "perf-bor-36",
+        "Sleeping bag",
+        "The warm one.",
+        "{{child}}",
+        "{{partner}}",
+        "{{date:-113}}",
+        "{{date:-107}}",
+        "[]",
+        "returned"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at, item_name, item_description, needed_date, return_date, return_condition) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-114 days','+35 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-114 days','+55 minutes'), ?, ?, ?, ?, ?)",
+      "params": [
+        "perf-bor-36",
+        "{{child}}",
+        "{{partner}}",
+        1,
+        1,
+        "locked",
+        "Sleeping bag",
+        "The warm one.",
+        "{{date:-113}}",
+        "{{date:-107}}",
+        "[]"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-120 days','+36 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-119 days','+66 minutes'))",
+      "params": [
+        "perf-bor-37",
+        "Ladder",
+        "The 8-foot stepladder.",
+        "{{me}}",
+        "{{partner}}",
+        "{{date:-118}}",
+        "{{date:-112}}",
+        "[\"as-is\"]",
+        "Pay the replacement cost.",
+        "cancelled"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-120 days','+56 minutes'))",
+      "params": [
+        "perf-bor-37",
+        "{{me}}",
+        "{{partner}}",
+        0,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-125 days','+37 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-124 days','+67 minutes'))",
+      "params": [
+        "perf-bor-38",
+        "Bike pump",
+        "{{partner}}",
+        "{{me}}",
+        "{{date:-123}}",
+        "{{date:-117}}",
+        "[\"washed\"]",
+        "Bake a cake.",
+        "cancelled"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-125 days','+57 minutes'))",
+      "params": [
+        "perf-bor-38",
+        "{{partner}}",
+        "{{me}}",
+        0,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-130 days','+38 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-129 days','+68 minutes'))",
+      "params": [
+        "perf-bor-39",
+        "Slow cooker",
+        "Six-quart.",
+        "{{child}}",
+        "{{me}}",
+        "{{date:-128}}",
+        "{{date:-122}}",
+        "[\"dry-cleaned\",\"ironed\"]",
+        "Do the lender's chores for a week.",
+        "cancelled"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-130 days','+58 minutes'))",
+      "params": [
+        "perf-bor-39",
+        "{{child}}",
+        "{{me}}",
+        0,
+        0,
+        "pending"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-135 days','+39 minutes'), strftime('%Y-%m-%dT%H:%M:%fZ','now','-134 days','+69 minutes'))",
+      "params": [
+        "perf-bor-40",
+        "Tennis racket",
+        "For Saturday lessons.",
+        "{{me}}",
+        "{{adult2}}",
+        "{{date:-133}}",
+        "{{date:-127}}",
+        "[\"disinfected\"]",
+        "cancelled"
+      ]
+    },
+    {
+      "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES (?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now','-135 days','+59 minutes'))",
+      "params": [
+        "perf-bor-40",
+        "{{me}}",
+        "{{adult2}}",
+        0,
+        0,
+        "pending"
+      ]
+    }
+  ]
+}
