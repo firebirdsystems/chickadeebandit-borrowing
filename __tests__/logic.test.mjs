@@ -3,7 +3,7 @@ import {
   CONDITION_OPTIONS, STATUS_INFO,
   conditionLabel, formatDate,
   filterRequests, pendingBadgeCount,
-  needsMyAction, willLockOnAgree, searchableFields,
+  needsMyAction, willLockOnAgree, waitingOnTheirReview, searchableFields,
 } from "../src/logic.js";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -170,6 +170,33 @@ describe("needsMyAction", () => {
   it("returns false when status is not pending", () => {
     expect(needsMyAction(req({ status: "locked" }), "u1")).toBe(false);
     expect(needsMyAction(req({ status: "returned" }), "u1")).toBe(false);
+  });
+});
+
+// ── waitingOnTheirReview ──────────────────────────────────────────────────────
+
+describe("waitingOnTheirReview", () => {
+  it("is true for the party whose counterpart agreed to terms since edited", () => {
+    expect(waitingOnTheirReview(req({ borrower_outdated: true }), "u2")).toBe(true);
+    expect(waitingOnTheirReview(req({ lender_outdated: true }), "u1")).toBe(true);
+  });
+
+  it("is false for the party whose own agreement is the outdated one", () => {
+    expect(waitingOnTheirReview(req({ borrower_outdated: true }), "u1")).toBe(false);
+    expect(waitingOnTheirReview(req({ borrower_outdated: true, lender_outdated: true }), "u2")).toBe(false);
+  });
+
+  it("is false with no outdated agreement, and once the request is not pending", () => {
+    expect(waitingOnTheirReview(req(), "u2")).toBe(false);
+    expect(waitingOnTheirReview(req({ status: "locked", borrower_outdated: true }), "u2")).toBe(false);
+  });
+
+  it("takes the request out of the waiting party's to-do, and leaves it in the other's", () => {
+    const r = req({ borrower_outdated: true });
+    expect(needsMyAction(r, "u2")).toBe(false);
+    expect(pendingBadgeCount([r], "u2", "for-me")).toBe(0);
+    expect(needsMyAction(r, "u1")).toBe(true);
+    expect(pendingBadgeCount([r], "u1", "from-me")).toBe(1);
   });
 });
 

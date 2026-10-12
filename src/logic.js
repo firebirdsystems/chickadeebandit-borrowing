@@ -36,14 +36,28 @@ export function filterRequests(requests, meId, tab) {
 
 export function pendingBadgeCount(requests, meId, tab) {
   if (tab === "for-me")
-    return requests.filter(r => r.lender_id === meId && r.status === "pending" && !r.lender_agreed).length;
-  return requests.filter(r => r.borrower_id === meId && r.status === "pending" && !r.borrower_agreed).length;
+    return requests.filter(r => r.lender_id === meId && r.status === "pending" && !r.lender_agreed && !waitingOnTheirReview(r, meId)).length;
+  return requests.filter(r => r.borrower_id === meId && r.status === "pending" && !r.borrower_agreed && !waitingOnTheirReview(r, meId)).length;
+}
+
+/**
+ * The other party's agreement is on record for terms that have since been
+ * edited (`*_outdated`). The hub holds a request to the terms of its first
+ * standing agreement and only that party can take theirs off, so they have
+ * to agree to the new terms before this member can. Not when this member's
+ * own agreement is outdated too: then taking it off is theirs to do.
+ */
+export function waitingOnTheirReview(req, meId) {
+  const isBorrower = req.borrower_id === meId;
+  const theirOutdated = isBorrower ? req.lender_outdated : req.borrower_outdated;
+  const myOutdated = isBorrower ? req.borrower_outdated : req.lender_outdated;
+  return req.status === "pending" && !!theirOutdated && !myOutdated;
 }
 
 export function needsMyAction(req, meId) {
   const isBorrower = req.borrower_id === meId;
   const myAgreed = isBorrower ? req.borrower_agreed : req.lender_agreed;
-  return req.status === "pending" && !myAgreed;
+  return req.status === "pending" && !myAgreed && !waitingOnTheirReview(req, meId);
 }
 
 export function willLockOnAgree(req, meId) {

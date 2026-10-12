@@ -18,10 +18,11 @@
         },
         {
           "action": "seedRaw",
-          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES ('br-req', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z')",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES ('br-req', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z', ?, '', '2026-09-10', '2026-09-20', '[]', '')",
           "params": [
             "{{borrower}}",
-            "{{lender}}"
+            "{{lender}}",
+            "Pressure washer"
           ]
         },
         {
@@ -114,10 +115,11 @@
         },
         {
           "action": "seedRaw",
-          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES ('br-noop', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z')",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES ('br-noop', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z', ?, '', '2026-09-10', '2026-09-20', '[]', '')",
           "params": [
             "{{borrower}}",
-            "{{lender}}"
+            "{{lender}}",
+            "Extension ladder"
           ]
         },
         {
@@ -705,7 +707,7 @@
         {
           "action": "expectText",
           "selector": "[data-testid=\"modal-error\"]",
-          "text": "Injected fault: database unavailable",
+          "text": "Couldn’t save the request — try again.",
           "as": "borrower"
         },
         {
@@ -771,6 +773,491 @@
           "selector": "[data-testid=\"request-card\"]",
           "count": 1,
           "as": "borrower"
+        }
+      ]
+    },
+    {
+      "name": "an edit that could not be saved stays in the form as typed, leaves the card as it was, and saves on the second try",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('br-down', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Extension ladder",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES ('br-down', ?, ?, 0, 0, 'pending', '2026-08-01T09:00:00Z')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-down\"][data-request-status=\"pending\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-down\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-down\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"edit-btn\"][data-request-id=\"br-down\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"field-item\"]",
+          "as": "lender"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"field-item\"]",
+          "value": "Ladder, ten foot",
+          "as": "lender"
+        },
+        {
+          "action": "fault",
+          "mode": "down",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"save-request\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"modal-error\"]",
+          "text": "Couldn’t save the request — try again.",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"field-item\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-down\"][data-request-status=\"pending\"]",
+          "text": "Extension ladder",
+          "as": "lender"
+        },
+        {
+          "action": "expectNoText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-down\"]",
+          "text": "ten foot",
+          "as": "lender"
+        },
+        {
+          "action": "fault",
+          "mode": "none",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"save-request\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-down\"][data-request-status=\"pending\"]",
+          "text": "Ladder, ten foot",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"field-item\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-down\"][data-request-status=\"pending\"]",
+          "text": "Ladder, ten foot",
+          "as": "lender"
+        }
+      ]
+    },
+    {
+      "name": "an edit after the other person agreed resets both agreements: nobody is shown as agreed until the other person agrees to the new terms",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('br-edit', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Hedge trimmer",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES ('br-edit', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z', ?, '', '2026-09-10', '2026-09-20', '[]', '')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}",
+            "Hedge trimmer"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"pending\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"withdraw-btn\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"borrower\"][data-agreed=\"yes\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"lender\"][data-agreed=\"no\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "open",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"pending\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"edit-btn\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"field-item\"]",
+          "as": "lender"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"field-item\"]",
+          "value": "Hedge trimmer and the long ladder",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"save-request\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"pending\"]",
+          "text": "and the long ladder",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"field-item\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"pending\"]",
+          "text": "and the long ladder",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"borrower\"][data-agreed=\"no\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"lender\"][data-agreed=\"no\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"agree-waiting\"]",
+          "text": "E2E borrowing-borrower agreed before this request was edited",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-edit\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"withdraw-btn\"][data-request-id=\"br-edit\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"pending\"]",
+          "text": "and the long ladder",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"borrower\"][data-agreed=\"no\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"lender\"][data-agreed=\"no\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"withdraw-btn\"][data-request-id=\"br-edit\"]",
+          "count": 0,
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]:not([data-saving])",
+          "as": "borrower"
+        },
+        {
+          "action": "reload",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"pending\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"withdraw-btn\"][data-request-id=\"br-edit\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"borrower\"][data-agreed=\"yes\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"lender\"][data-agreed=\"no\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "borrower"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"pending\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"borrower\"][data-agreed=\"yes\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agreement-person\"][data-party=\"lender\"][data-agreed=\"no\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"agree-waiting\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-edit\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"]:not([data-saving])",
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-edit\"][data-request-status=\"locked\"]",
+          "text": "and the long ladder",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "lender"
         }
       ]
     }

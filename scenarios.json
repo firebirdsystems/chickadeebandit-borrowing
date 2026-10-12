@@ -73,6 +73,46 @@
       ]
     },
     {
+      "name": "an edit to a pending request cannot clear the other party's recorded agreement, so the terms recorded with it are what show it no longer stands",
+      "members": { "borrower": "adult", "lender": "adult" },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, item_description, borrower_id, lender_id, needed_date, return_date, return_condition, if_not_returned, status, created_at, updated_at) VALUES ('r1', 'Ladder', '', ?, ?, '2026-02-01', '2026-02-08', '[]', 'replace it', 'pending', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')",
+          "params": ["{{borrower}}", "{{lender}}"]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at, item_name, item_description, needed_date, return_date, return_condition, if_not_returned) VALUES ('r1', ?, ?, 1, 0, 'pending', '2026-01-02T00:00:00Z', 'Ladder', '', '2026-02-01', '2026-02-08', '[]', 'replace it')",
+          "params": ["{{borrower}}", "{{lender}}"]
+        },
+        {
+          "action": "db",
+          "as": "lender",
+          "sql": "SELECT ra.borrower_agreed, CASE WHEN ra.item_name IS r.item_name AND ra.item_description IS r.item_description AND ra.needed_date IS r.needed_date AND ra.return_date IS r.return_date AND ra.return_condition IS r.return_condition AND ra.if_not_returned IS r.if_not_returned THEN 1 ELSE 0 END AS terms_current FROM app_borrowing__requests r LEFT JOIN app_borrowing__request_agreements ra ON ra.id = r.id WHERE r.id = 'r1'",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "borrower_agreed": 1, "terms_current": 1 }] }
+        },
+        {
+          "action": "db",
+          "as": "lender",
+          "sql": "UPDATE app_borrowing__requests SET return_date = '2026-03-01', updated_at = '2026-01-03T00:00:00Z' WHERE id = 'r1' AND status = 'pending' RETURNING id",
+          "expect": { "status": 200, "rowCount": 1 }
+        },
+        {
+          "action": "db",
+          "as": "lender",
+          "sql": "UPDATE app_borrowing__request_agreements SET borrower_agreed = 0 WHERE id = 'r1'",
+          "expect": { "status": 403, "errorIncludes": "endpoint" }
+        },
+        {
+          "action": "db",
+          "as": "borrower",
+          "sql": "SELECT ra.borrower_agreed, CASE WHEN ra.item_name IS r.item_name AND ra.item_description IS r.item_description AND ra.needed_date IS r.needed_date AND ra.return_date IS r.return_date AND ra.return_condition IS r.return_condition AND ra.if_not_returned IS r.if_not_returned THEN 1 ELSE 0 END AS terms_current FROM app_borrowing__requests r LEFT JOIN app_borrowing__request_agreements ra ON ra.id = r.id WHERE r.id = 'r1'",
+          "expect": { "status": 200, "rowCount": 1, "rowsContain": [{ "borrower_agreed": 1, "terms_current": 0 }] }
+        }
+      ]
+    },
+    {
       "name": "a child cannot see or alter a borrowing request between two adults",
       "members": { "kid": "child", "lender": "adult", "borrower": "adult" },
       "steps": [
