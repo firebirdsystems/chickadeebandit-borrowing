@@ -137,6 +137,18 @@
           "expect": { "status": 200, "rowCount": 0 }
         }
       ]
+    },
+    {
+      "name": "once one party marks a request returned, the other party's cancel changes nothing; and the reverse",
+      "members": {"borrower": "adult", "lender": "adult"},
+      "steps": [
+        {"action": "seedRaw", "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('r1', 'Ladder', ?, ?, '2026-01-10', '2026-01-12', 'pending', ?, ?), ('r2', 'Drill', ?, ?, '2026-01-10', '2026-01-12', 'pending', ?, ?)", "params": ["{{borrower}}", "{{lender}}", "2026-01-01T00:00:00Z", "2026-01-01T00:00:00Z", "{{borrower}}", "{{lender}}", "2026-01-01T00:00:00Z", "2026-01-01T00:00:00Z"]},
+        {"action": "db", "as": "lender", "sql": "UPDATE app_borrowing__requests SET status = 'returned', updated_at = ? WHERE id = ? AND status NOT IN ('returned', 'cancelled') RETURNING id", "params": ["2026-01-01T00:00:00Z", "r1"], "expect": {"status": 200, "rowCount": 1}},
+        {"action": "db", "as": "borrower", "sql": "UPDATE app_borrowing__requests SET status = 'cancelled', updated_at = ? WHERE id = ? AND status NOT IN ('returned', 'cancelled') RETURNING id", "params": ["2026-01-01T00:00:00Z", "r1"], "expect": {"status": 200, "rowCount": 0}},
+        {"action": "db", "as": "borrower", "sql": "UPDATE app_borrowing__requests SET status = 'cancelled', updated_at = ? WHERE id = ? AND status NOT IN ('returned', 'cancelled') RETURNING id", "params": ["2026-01-01T00:00:00Z", "r2"], "expect": {"status": 200, "rowCount": 1}},
+        {"action": "db", "as": "lender", "sql": "UPDATE app_borrowing__requests SET status = 'returned', updated_at = ? WHERE id = ? AND status NOT IN ('returned', 'cancelled') RETURNING id", "params": ["2026-01-01T00:00:00Z", "r2"], "expect": {"status": 200, "rowCount": 0}},
+        {"action": "db", "as": "lender", "sql": "SELECT id, status FROM app_borrowing__requests ORDER BY id", "expect": {"status": 200, "rowCount": 2, "rowsContain": [{"id": "r1", "status": "returned"}, {"id": "r2", "status": "cancelled"}]}}
+      ]
     }
   ]
 }

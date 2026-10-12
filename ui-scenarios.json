@@ -95,6 +95,684 @@
           "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-req\"]"
         }
       ]
+    },
+    {
+      "name": "an edit that changes nothing is reported, not shown as saved, and leaves the request as it was",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('br-noop', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Extension ladder",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES ('br-noop', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-noop\"][data-request-status=\"pending\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-noop\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-noop\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"edit-btn\"][data-request-id=\"br-noop\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"field-item\"]",
+          "as": "lender"
+        },
+        {
+          "action": "fault",
+          "mode": "noop",
+          "as": "lender"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"field-item\"]",
+          "value": "Ladder, ten foot",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"save-request\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"page-error\"]",
+          "text": "This request can no longer be changed.",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-noop\"][data-request-status=\"pending\"]",
+          "text": "Extension ladder",
+          "as": "lender"
+        },
+        {
+          "action": "expectNoText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-noop\"]",
+          "text": "ten foot",
+          "as": "lender"
+        },
+        {
+          "action": "fault",
+          "mode": "none",
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-noop\"][data-request-status=\"pending\"]",
+          "text": "Extension ladder",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-noop\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"agree-btn\"][data-request-id=\"br-noop\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"withdraw-btn\"][data-request-id=\"br-noop\"]",
+          "count": 0,
+          "as": "lender"
+        }
+      ]
+    },
+    {
+      "name": "an edit saved after the request was marked returned is refused, and the return stands",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('br-race', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Camping stove",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, updated_at) VALUES ('br-race', ?, ?, 1, 0, 'pending', '2026-08-01T09:00:00Z')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-race\"][data-request-status=\"pending\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-race\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-detail\"][data-request-id=\"br-race\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"edit-btn\"][data-request-id=\"br-race\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"field-item\"]",
+          "as": "lender"
+        },
+        {
+          "action": "seedRaw",
+          "sql": "UPDATE app_borrowing__requests SET status = 'returned', updated_at = '2026-08-02T09:00:00Z' WHERE id = 'br-race'"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"field-item\"]",
+          "value": "Stove, two burner",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"save-request\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"page-error\"]",
+          "text": "This request can no longer be changed.",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-race\"][data-request-status=\"returned\"]",
+          "text": "Camping stove",
+          "as": "lender"
+        },
+        {
+          "action": "expectNoText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-race\"]",
+          "text": "two burner",
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-race\"][data-request-status=\"returned\"]",
+          "text": "Camping stove",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "lender"
+        }
+      ]
+    },
+    {
+      "name": "a return that changes nothing is reported and the request stays agreed",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('br-ret', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Wheelbarrow",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at) VALUES ('br-ret', ?, ?, 1, 1, 'locked', '2026-08-01T10:00:00Z', '2026-08-01T10:00:00Z')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-ret\"][data-request-status=\"locked\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-ret\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"return-btn\"][data-request-id=\"br-ret\"]",
+          "as": "lender"
+        },
+        {
+          "action": "fault",
+          "mode": "noop",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"return-btn\"][data-request-id=\"br-ret\"]",
+          "as": "lender"
+        },
+        {
+          "action": "dialog",
+          "answer": "accept",
+          "text": "Mark this item as returned?",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"page-error\"]",
+          "text": "This request was already returned or cancelled.",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-ret\"][data-request-status=\"locked\"]",
+          "text": "Wheelbarrow",
+          "as": "lender"
+        },
+        {
+          "action": "fault",
+          "mode": "none",
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-ret\"][data-request-status=\"locked\"]",
+          "text": "Wheelbarrow",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-ret\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"return-btn\"][data-request-id=\"br-ret\"]",
+          "as": "lender"
+        }
+      ]
+    },
+    {
+      "name": "a cancel that changes nothing is reported and the request stays pending",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('br-can', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Sewing machine",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at) VALUES ('br-can', ?, ?, 1, 0, 'pending', NULL, '2026-08-01T09:00:00Z')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-can\"][data-request-status=\"pending\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-can\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"cancel-btn\"][data-request-id=\"br-can\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "fault",
+          "mode": "noop",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"cancel-btn\"][data-request-id=\"br-can\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "dialog",
+          "answer": "accept",
+          "text": "Cancel this borrowing request?",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"page-error\"]",
+          "text": "This request was already returned or cancelled.",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-can\"][data-request-status=\"pending\"]",
+          "text": "Sewing machine",
+          "as": "borrower"
+        },
+        {
+          "action": "fault",
+          "mode": "none",
+          "as": "borrower"
+        },
+        {
+          "action": "reload",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-can\"][data-request-status=\"pending\"]",
+          "text": "Sewing machine",
+          "as": "borrower"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "borrower"
+        }
+      ]
+    },
+    {
+      "name": "a cancel pressed after the other person marked the item returned is refused, and the return stands",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__requests (id, item_name, borrower_id, lender_id, needed_date, return_date, status, created_at, updated_at) VALUES ('br-late', ?, ?, ?, '2026-09-10', '2026-09-20', 'pending', '2026-08-01T09:00:00Z', '2026-08-01T09:00:00Z')",
+          "params": [
+            "Pasta maker",
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "seedRaw",
+          "sql": "INSERT INTO app_borrowing__request_agreements (id, borrower_id, lender_id, borrower_agreed, lender_agreed, status, locked_at, updated_at) VALUES ('br-late', ?, ?, 1, 1, 'locked', '2026-08-01T10:00:00Z', '2026-08-01T10:00:00Z')",
+          "params": [
+            "{{borrower}}",
+            "{{lender}}"
+          ]
+        },
+        {
+          "action": "open",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-late\"][data-request-status=\"locked\"]",
+          "as": "lender"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-late\"]",
+          "as": "lender"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"cancel-btn\"][data-request-id=\"br-late\"]",
+          "as": "lender"
+        },
+        {
+          "action": "seedRaw",
+          "sql": "UPDATE app_borrowing__requests SET status = 'returned', updated_at = '2026-08-02T09:00:00Z' WHERE id = 'br-late'"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"cancel-btn\"][data-request-id=\"br-late\"]",
+          "as": "lender"
+        },
+        {
+          "action": "dialog",
+          "answer": "accept",
+          "text": "Cancel this borrowing request?",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"page-error\"]",
+          "text": "This request was already returned or cancelled.",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-late\"][data-request-status=\"returned\"]",
+          "text": "Pasta maker",
+          "as": "lender"
+        },
+        {
+          "action": "reload",
+          "as": "lender"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-id=\"br-late\"][data-request-status=\"returned\"]",
+          "text": "Pasta maker",
+          "as": "lender"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"page-error\"]",
+          "count": 0,
+          "as": "lender"
+        }
+      ]
+    },
+    {
+      "name": "a request that could not be sent stays in the form, draws no card, and sends once on the second try",
+      "members": {
+        "borrower": "adult",
+        "lender": "adult"
+      },
+      "steps": [
+        {
+          "action": "open",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "text": "You haven't made any borrow requests yet.",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"new-request\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"field-item\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"field-item\"]",
+          "value": "Hedge trimmer",
+          "as": "borrower"
+        },
+        {
+          "action": "select",
+          "selector": "[data-testid=\"field-lender\"]",
+          "value": "{{lender}}",
+          "as": "borrower"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"field-needed\"]",
+          "value": "2026-11-01",
+          "as": "borrower"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"field-return\"]",
+          "value": "2026-11-05",
+          "as": "borrower"
+        },
+        {
+          "action": "fault",
+          "mode": "down",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"save-request\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"modal-error\"]",
+          "text": "Injected fault: database unavailable",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"field-item\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "text": "You haven't made any borrow requests yet.",
+          "as": "borrower"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"request-card\"]",
+          "count": 0,
+          "as": "borrower"
+        },
+        {
+          "action": "fault",
+          "mode": "none",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"save-request\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-status=\"pending\"]",
+          "text": "Hedge trimmer",
+          "as": "borrower"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"field-item\"]",
+          "count": 0,
+          "as": "borrower"
+        },
+        {
+          "action": "reload",
+          "as": "borrower"
+        },
+        {
+          "action": "expectVisible",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"app-tab\"][data-tab=\"from-me\"]",
+          "as": "borrower"
+        },
+        {
+          "action": "expectText",
+          "selector": "[data-testid=\"request-card\"][data-request-status=\"pending\"]",
+          "text": "Hedge trimmer",
+          "as": "borrower"
+        },
+        {
+          "action": "expectCount",
+          "selector": "[data-testid=\"request-card\"]",
+          "count": 1,
+          "as": "borrower"
+        }
+      ]
     }
   ]
 }
