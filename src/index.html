@@ -431,6 +431,7 @@ import {
   conditionLabel, formatDate,
   filterRequests, pendingBadgeCount,
   needsMyAction, willLockOnAgree, waitingOnTheirReview, searchableFields,
+  outcomeUnknown, storedDiffers, SAVED_AS_FIRST, failureLine,
 } from "./logic.js";
 
 const CONTEXT = window.__CONTEXT_URL ?? "";
@@ -455,7 +456,7 @@ async function db(sql, params = []) {
     body: JSON.stringify({ sql, params }),
   });
   const json = await res.json().catch(() => null);
-  if (!res.ok || !json || typeof json !== "object" || json.error) throw new Error(json?.error || "Couldn’t reach the hub. Try again.");
+  if (!res.ok || !json || typeof json !== "object" || json.error) throw Object.assign(new Error(json?.error || "Couldn’t reach the hub. Try again."), { status: res.status, code: json?.code });
   return json;
 }
 
@@ -472,11 +473,9 @@ async function agreeOnServer(reqId, agreed, terms) {
   });
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
-    // A refusal (4xx) is the hub's answer about this agreement — the terms
-    // changed, the request is locked — and is shown as given. Anything else
-    // is a failure, and the page words that itself (see failText).
-    const refused = res.status >= 400 && res.status < 500 && typeof e.error === "string" && e.error;
-    throw Object.assign(new Error(e.error || "Agreement update failed"), { forUser: !!refused });
+    // The hub's text goes to the console only; the page words the line itself
+    // from the status (409: the terms changed under it; see failureLine).
+    throw Object.assign(new Error(e?.error || "Agreement update failed"), { status: res.status, code: typeof e?.code === "string" ? e.code : undefined });
   }
   return res.json();
 }
@@ -614,38 +613,96 @@ async function logActivity(requestId, borrowerId, lenderId, action, detail = "")
 
 // ─── Actions ──────────────────────────────────────────────────────────────
 // A write that failed after the screen already showed it: say so, and redraw
-// from what the hub actually holds.
-// Only wording written for the reader is shown; the hub's own error text goes
-// to the console and the reader gets the fixed line.
-function failText(e, line) {
-  if (!e?.forUser) console.error(e);
-  return e?.forUser ? e.message : line;
-}
-async function writeFailed(e) {
-  error = failText(e, "Couldn’t save — try again.");
-  try { await loadRequests(); } catch { /* keep the message; the list stays as drawn */ }
+// from what the hub actually holds. The hub's own error text goes to the
+// console; the reader gets failureLine's line in the action's own words.
+// A write that changed nothing passes `e` null and the request's `id`: the
+// re-read decides between removed, refused and changed, and `closed` is the
+// page's own line for a request the re-read finds returned or cancelled.
+// `allowed` lists the statuses a guarded write's WHERE admits: a row found in
+// one of them was refused by the row policy, not changed by someone else.
+async function writeFailed(e, words, { id = null, allowed = null, closed = "" } = {}) {
+  if (e) console.error(e);
+  let found;
+  try {
+    await loadRequests();
+    if (id) found = requests.some(r => r.id === id);
+  } catch (readErr) {
+    console.error(readErr); // keep the message; the list stays as drawn
+    if (id) found = null;
+  }
+  const status = found ? requests.find(r => r.id === id)?.status : null;
+  const guarded = !!allowed && !allowed.includes(status);
+  error = closed && (status === "returned" || status === "cancelled")
+    ? closed
+    : failureLine(e, { ...words, found, guarded });
   render();
 }
+const SAVE_WORDS = { action: "save the request", thing: "request" };
 
-async function createRequest(fields) {
-  const id  = crypto.randomUUID();
-  const now = new Date().toISOString();
+// The re-read after a write the hub already stored. Its failure is logged, not
+// reported: the write landed, and the page keeps what it drew.
+function reloadAfterWrite(req = null) {
+  return loadRequests().then(render, (e) => {
+    console.error(e);
+    if (req) req.saving = false;
+    render();
+  });
+}
+
+async function createRequest(fields, pinHost = null) {
+  // The id is the form's, minted on its first Create and sent on every retry:
+  // a try whose answer was lost may have stored the request, and a second
+  // press must find it rather than ask (and notify the lender) twice.
+  const id  = pinHost ? (pinHost.dataset.rowId ||= crypto.randomUUID()) : crypto.randomUUID();
+  let now = new Date().toISOString();
+  let note = "";
 
   // The form stays open until the hub has the request. A save that fails
   // throws to submitForm, which says so in the form and leaves what was typed
   // in place to send again — nothing is drawn in the list for a request the
   // hub never got.
-  await db(`INSERT INTO app_borrowing__requests (
-    id, item_name, item_description, borrower_id, lender_id,
-    needed_date, return_date, return_condition, if_not_returned,
-    status, created_at, updated_at
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`, [
-    id, fields.item_name, fields.item_description, ME.id, fields.lender_id,
-    fields.needed_date, fields.return_date,
-    JSON.stringify(fields.return_condition), fields.if_not_returned,
-    now, now,
-  ]);
+  try {
+    await db(`INSERT INTO app_borrowing__requests (
+      id, item_name, item_description, borrower_id, lender_id,
+      needed_date, return_date, return_condition, if_not_returned,
+      status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`, [
+      id, fields.item_name, fields.item_description, ME.id, fields.lender_id,
+      fields.needed_date, fields.return_date,
+      JSON.stringify(fields.return_condition), fields.if_not_returned,
+      now, now,
+    ]);
+  } catch (e) {
+    // Unknown outcome: read the request back by the pinned id. Found means an
+    // earlier try landed and its success path never ran, so it runs now, once.
+    // Not found, or the read failed: the save fails, the id stays pinned.
+    if (!outcomeUnknown(e)) throw e;
+    let stored = null, readFailed = false;
+    try {
+      stored = (await db(`SELECT item_name, item_description, lender_id, needed_date, return_date, return_condition, if_not_returned, created_at
+        FROM app_borrowing__requests WHERE id = ?`, [id])).rows?.[0] ?? null;
+    } catch (readErr) { console.error(readErr); readFailed = true; }
+    // The id is ours: with the read-back failed, a UNIQUE answer may be this
+    // form's own first try, so nothing is known — "try again", not "already exists".
+    // The same words, without the status/code that would choose a refusal line.
+    if (readFailed) throw new Error(String(e?.message ?? "create outcome unknown"), { cause: e });
+    if (!stored) throw e;
+    console.error(e);
+    const typed = { ...fields, return_condition: JSON.stringify(fields.return_condition) };
+    // Edited since that first try: what was stored is kept, and said so.
+    if (storedDiffers(stored, typed)) note = SAVED_AS_FIRST;
+    let return_condition = [];
+    try { return_condition = JSON.parse(stored.return_condition || "[]"); } catch { /* drawn as none */ }
+    fields = {
+      item_name: stored.item_name, item_description: stored.item_description ?? "", lender_id: stored.lender_id,
+      needed_date: stored.needed_date, return_date: stored.return_date,
+      return_condition, if_not_returned: stored.if_not_returned ?? "",
+    };
+    now = stored.created_at || now;
+  }
+  if (pinHost) delete pinHost.dataset.rowId;
 
+  requests = requests.filter(r => r.id !== id);
   requests.unshift({
     id, item_name: fields.item_name, item_description: fields.item_description,
     borrower_id: ME.id, lender_id: fields.lender_id,
@@ -654,7 +711,7 @@ async function createRequest(fields) {
     status: "pending", borrower_agreed: true, lender_agreed: false,
     created_at: now, updated_at: now, locked_at: null,
   });
-  error = "";
+  error = note;
   closeModal();
   render();
 
@@ -666,7 +723,7 @@ async function createRequest(fields) {
   ).catch(() => {});
   publishEvent("borrowing.requested", id, { borrower: ME.name, item: fields.item_name, lender_id: fields.lender_id });
   // init_from_table creates request_agreements + sets borrower flag
-  agreeOnServer(id, true).then(() => loadRequests().then(render)).catch(writeFailed);
+  agreeOnServer(id, true).then(() => reloadAfterWrite(), (e) => writeFailed(e, SAVE_WORDS));
 
   // No activity-feed write here or at the two sibling sites below. That POST
   // used "message_posted", which is not one of the hub's own ActivityType
@@ -706,7 +763,7 @@ async function updateRequest(reqId, fields) {
   // The status guard misses when the other party cancelled or returned it first.
   if (res.changed === 0) {
     closeModal();
-    return writeFailed(Object.assign(new Error("This request can no longer be changed."), { forUser: true }));
+    return writeFailed(null, SAVE_WORDS, { id: reqId, allowed: ["pending"], closed: "This request can no longer be changed." });
   }
 
   Object.assign(req, {
@@ -739,8 +796,7 @@ async function updateRequest(reqId, fields) {
   // The editor is not agreed again here: that would lock the request on the
   // strength of the other party's old agreement.
   (mineOnRecord ? agreeOnServer(reqId, false) : Promise.resolve())
-    .then(() => loadRequests().then(render))
-    .catch(writeFailed);
+    .then(() => reloadAfterWrite(), (e) => writeFailed(e, SAVE_WORDS));
 }
 
 async function agreeRequest(reqId) {
@@ -785,8 +841,9 @@ async function agreeRequest(reqId) {
         `${ME.name} agreed to the terms for "${req.item_name}" — waiting for ${otherName} to agree`,
       ).catch(() => {});
     }
-    return loadRequests().then(render);
-  }).catch(writeFailed);
+    return true;
+  }, (e) => { writeFailed(e, { action: "agree to the request", thing: "request" }); return false; })
+    .then((stored) => stored && reloadAfterWrite(req));
 }
 
 async function withdrawAgreement(reqId) {
@@ -809,8 +866,9 @@ async function withdrawAgreement(reqId) {
       `Agreement withdrawn`,
       `${ME.name} withdrew their agreement for the borrow of "${req.item_name}"`,
     ).catch(() => {});
-    return loadRequests().then(render);
-  }).catch(writeFailed);
+    return true;
+  }, (e) => { writeFailed(e, { action: "withdraw your agreement", thing: "request" }); return false; })
+    .then((stored) => stored && reloadAfterWrite());
 }
 
 async function markReturned(reqId) {
@@ -829,16 +887,21 @@ async function markReturned(reqId) {
   // `changed` is the answer.
   db(`UPDATE app_borrowing__requests SET status = 'returned', updated_at = ? WHERE id = ? AND status NOT IN ('returned', 'cancelled')`, [now, reqId])
     .then((res) => {
-      if (res.changed === 0) throw Object.assign(new Error("This request was already returned or cancelled."), { forUser: true });
+      // The guard admits every status but returned/cancelled, which `closed`
+      // answers: a row found in any other was refused by the row policy.
+      if (res.changed === 0) return writeFailed(null, RETURN_WORDS, { id: reqId, closed: CLOSED_LINE });
       if (req) {
         logActivity(reqId, req.borrower_id, req.lender_id, "returned", `${ME.name} marked the item as returned`).catch(() => {});
         notify(`Item returned`, `${ME.name} marked "${req.item_name}" as returned`).catch(() => {});
         publishEvent("borrowing.returned", reqId, { item: req.item_name, borrower_id: req.borrower_id, lender_id: req.lender_id });
       }
-      return loadRequests().then(render);
-    })
-    .catch(writeFailed);
+      return true;
+    }, (e) => { writeFailed(e, RETURN_WORDS); return false; })
+    // The UPDATE is stored: a failed re-read is logged, not shown as a failed write.
+    .then((stored) => stored === true && reloadAfterWrite());
 }
+const RETURN_WORDS = { action: "mark the item as returned", thing: "request" };
+const CLOSED_LINE = "This request was already returned or cancelled.";
 
 async function cancelRequest(reqId) {
   if (!await hubConfirm({ message: "Cancel this borrowing request?", confirmLabel: "Cancel request" })) return;
@@ -853,15 +916,16 @@ async function cancelRequest(reqId) {
 
   db(`UPDATE app_borrowing__requests SET status = 'cancelled', updated_at = ? WHERE id = ? AND status NOT IN ('returned', 'cancelled')`, [now, reqId])
     .then((res) => {
-      if (res.changed === 0) throw Object.assign(new Error("This request was already returned or cancelled."), { forUser: true });
+      if (res.changed === 0) return writeFailed(null, CANCEL_WORDS, { id: reqId, closed: CLOSED_LINE });
       if (req) {
         logActivity(reqId, req.borrower_id, req.lender_id, "cancelled", `${ME.name} cancelled the request`).catch(() => {});
         notify(`Borrow request cancelled`, `${ME.name} cancelled the request to borrow "${req.item_name}"`).catch(() => {});
       }
-      return loadRequests().then(render);
-    })
-    .catch(writeFailed);
+      return true;
+    }, (e) => { writeFailed(e, CANCEL_WORDS); return false; })
+    .then((stored) => stored === true && reloadAfterWrite());
 }
+const CANCEL_WORDS = { action: "cancel the request", thing: "request" };
 
 // ─── Modal ────────────────────────────────────────────────────────────────
 let modalEl = null;
@@ -972,12 +1036,13 @@ window.submitForm = async function(existingId) {
       const lenderEl = document.getElementById("f-lender");
       const lender_id = lenderEl?.value;
       if (!lender_id) return;
-      await createRequest({ item_name, item_description, lender_id, needed_date, return_date, return_condition, if_not_returned });
+      await createRequest({ item_name, item_description, lender_id, needed_date, return_date, return_condition, if_not_returned }, modalEl);
     }
   } catch (e) {
     // Nothing was saved: say so here and leave the form as typed, ready to send again.
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = existingId ? "Save Changes" : "Create Request"; }
-    if (errorEl) { errorEl.textContent = failText(e, "Couldn’t save the request — try again."); errorEl.hidden = false; }
+    console.error(e);
+    if (errorEl) { errorEl.textContent = failureLine(e, SAVE_WORDS); errorEl.hidden = false; }
   }
 };
 

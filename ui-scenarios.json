@@ -170,7 +170,7 @@
         {
           "action": "expectText",
           "selector": "[data-testid=\"page-error\"]",
-          "text": "This request can no longer be changed.",
+          "text": "You don’t have permission to save the request.",
           "as": "lender"
         },
         {
@@ -390,7 +390,7 @@
         {
           "action": "expectText",
           "selector": "[data-testid=\"page-error\"]",
-          "text": "This request was already returned or cancelled.",
+          "text": "You don’t have permission to mark the item as returned.",
           "as": "lender"
         },
         {
@@ -504,7 +504,7 @@
         {
           "action": "expectText",
           "selector": "[data-testid=\"page-error\"]",
-          "text": "This request was already returned or cancelled.",
+          "text": "You don’t have permission to cancel the request.",
           "as": "borrower"
         },
         {
